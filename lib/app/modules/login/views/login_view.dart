@@ -35,15 +35,16 @@ class LoginView extends StatelessWidget {
               ),
               SizedBox(height: 40),
 
-              // 2. INPUT EMAIL
+              // 2. INPUT NISN / NIP
               TextField(
-                controller: controller.emailC,
+                controller: controller.idC,
                 decoration: InputDecoration(
-                  labelText: "Email Siswa",
-                  prefixIcon: Icon(Icons.email_outlined),
+                  labelText: "NISN / NIP", 
+                  hintText: "Masukkan NISN (Siswa) atau NIP (Guru)",
+                  prefixIcon: Icon(Icons.badge_outlined),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                keyboardType: TextInputType.emailAddress,
+                keyboardType: TextInputType.text,
               ),
               SizedBox(height: 16),
 
