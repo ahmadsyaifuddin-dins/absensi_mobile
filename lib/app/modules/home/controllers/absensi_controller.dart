@@ -11,6 +11,8 @@ import 'dart:convert';
 
 class AbsensiController extends GetxController {
   var isLoading = false.obs;
+  var kategoriIzin = 'Sakit'.obs; // Default Sakit
+  TextEditingController alasanC = TextEditingController();
   var address = "Mencari lokasi...".obs;
   var isInArea = false.obs;
 
@@ -30,7 +32,7 @@ class AbsensiController extends GetxController {
   final double radiusKm = 0.05; // Radius 50 meter
 
   // Data Foto
-  var imageFile = Rx<File?>(null);
+  var imageFile = Rx<XFile?>(null);
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -39,6 +41,46 @@ class AbsensiController extends GetxController {
     // Otomatis cari lokasi saat halaman dibuka
     determinePosition(); // Cek lokasi
     fetchHistory();
+  }
+
+  // Fungsi Submit Izin
+  Future<void> submitIzin(String token) async {
+    if (imageFile.value == null || alasanC.text.isEmpty) {
+      Get.snackbar("Error", "Foto bukti dan alasan wajib diisi!");
+      return;
+    }
+
+    isLoading.value = true;
+
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse('${ApiConfig.baseUrl}/absensi/izin'));
+      
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json'
+      });
+
+      request.fields['status'] = kategoriIzin.value;
+      request.fields['catatan'] = alasanC.text;
+      
+      // Upload Bukti
+      request.files.add(await http.MultipartFile.fromPath('bukti_izin', imageFile.value!.path));
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+
+      if (response.statusCode == 201) {
+        Get.back(); // Tutup form
+        Get.snackbar("Sukses", "Izin berhasil diajukan", backgroundColor: Colors.green, colorText: Colors.white);
+        fetchHistory(); // Refresh riwayat
+      } else {
+        Get.snackbar("Gagal", "Error: $responseData");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Gagal kirim data: $e");
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> fetchHistory() async {
@@ -126,14 +168,17 @@ class AbsensiController extends GetxController {
     }
   }
 
-  // 2. Ambil Foto Kamera
-  Future<void> pickImage() async {
+  Future<void> pickImage(bool fromGallery) async {
     final XFile? image = await _picker.pickImage(
-      source: ImageSource.camera, 
-      imageQuality: 50 // Kompres biar gak berat uploadnya
+      // Kalau fromGallery true -> Buka Galeri
+      // Kalau fromGallery false -> Buka Kamera
+      source: fromGallery ? ImageSource.gallery : ImageSource.camera, 
+      imageQuality: 50,
+      preferredCameraDevice: CameraDevice.front
     );
+    
     if (image != null) {
-      imageFile.value = File(image.path);
+      imageFile.value = image; 
     }
   }
 

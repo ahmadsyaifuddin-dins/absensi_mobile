@@ -5,6 +5,7 @@ import 'package:get_storage/get_storage.dart';
 import '../controllers/home_controller.dart';
 import '../views/absensi_view.dart';
 import '../views/riwayat_view.dart';
+import '../views/izin_view.dart';
 
 class HomeView extends StatelessWidget {
   final HomeController controller = Get.put(HomeController());
@@ -175,7 +176,7 @@ class HomeView extends StatelessWidget {
                           color: Colors.green,
                           label: "Izin / Sakit",
                           onTap: () {
-                            Get.snackbar("Info", "Fitur ini segera hadir!");
+                            Get.to(() => IzinView());
                           },
                         ),
 

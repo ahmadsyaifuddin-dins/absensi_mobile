@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/absensi_controller.dart';
+import 'dart:io';
 
 class AbsensiView extends StatelessWidget {
   final String tokenUser;
@@ -76,7 +77,8 @@ class AbsensiView extends StatelessWidget {
                 border: Border.all(color: Colors.grey.shade300),
                 image: controller.imageFile.value != null 
                   ? DecorationImage(
-                      image: FileImage(controller.imageFile.value!),
+                      // KITA BUNGKUS PAKAI File(...) DAN AMBIL .path NYA
+                      image: FileImage(File(controller.imageFile.value!.path)),
                       fit: BoxFit.cover
                     )
                   : null
@@ -100,7 +102,7 @@ class AbsensiView extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => controller.pickImage(), 
+                    onPressed: () => controller.pickImage(false),
                     icon: Icon(Icons.camera_alt), 
                     label: Text("Ambil Foto"),
                     style: OutlinedButton.styleFrom(
