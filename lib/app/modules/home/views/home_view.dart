@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../controllers/home_controller.dart';
-import '../views/absensi_view.dart';
 import 'package:get_storage/get_storage.dart';
+import '../controllers/home_controller.dart';
+// PASTIKAN IMPORT FILE VIEW YANG BENAR DI SINI
+import '../views/absensi_view.dart';
+import '../views/riwayat_view.dart'; // Buat file ini jika belum ada (dari chat sebelumnya)
 
 class HomeView extends StatelessWidget {
   final HomeController controller = Get.put(HomeController());
@@ -38,7 +40,7 @@ class HomeView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 20),
-                  
+
                   // --- HEADER INFO USER ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -48,51 +50,81 @@ class HomeView extends StatelessWidget {
                         children: [
                           Text(
                             "Halo, Selamat Pagi 👋",
-                            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
-                          ),
-                          Obx(() => Text(
-                            controller.user['nama'] ?? "User", // Ambil nama dinamis
                             style: GoogleFonts.poppins(
-                              color: Colors.white, 
-                              fontSize: 20, 
-                              fontWeight: FontWeight.bold
+                              color: Colors.white70,
+                              fontSize: 14,
                             ),
-                          )),
-                          Obx(() => Text(
-                            controller.user['role'] == 'siswa' 
-                                ? "Siswa XII MIPA 1" // Nanti kita ambil dari relasi kelas
-                                : "Guru / Staff",
-                            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
-                          )),
+                          ),
+                          Obx(
+                            () => Text(
+                              controller.user['nama'] ?? "User",
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize:
+                                    18, // Agak dikecilin biar gak nabrak kalau nama panjang
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Obx(
+                            () => Text(
+                              "Siswa / ${controller.user['nisn_nip'] ?? '-'}", // Tampilkan NISN
+                              style: GoogleFonts.poppins(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                      // Avatar/Foto Profil
                       CircleAvatar(
                         radius: 25,
                         backgroundColor: Colors.white24,
                         child: Icon(Icons.person, color: Colors.white),
-                      )
+                      ),
                     ],
                   ),
 
                   SizedBox(height: 30),
 
-                  // --- CARD STATUS HARI INI ---
+                  // --- CARD STATUS HARI INI (Versi Single: Cuma Masuk) ---
                   Container(
+                    width: double.infinity,
                     padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
-                        BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
                       ],
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    child: Column(
                       children: [
-                        _buildStatusItem("Masuk", "--:--"),
-                        Container(height: 40, width: 1, color: Colors.grey[300]),
-                        _buildStatusItem("Pulang", "--:--"),
+                        Text(
+                          "Jadwal Masuk",
+                          style: GoogleFonts.poppins(color: Colors.grey),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          "07:30 WITA",
+                          style: GoogleFonts.poppins(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blueAccent,
+                          ),
+                        ),
+                        Divider(),
+                        Text(
+                          "Jangan lupa absen sebelum jam masuk!",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -100,8 +132,13 @@ class HomeView extends StatelessWidget {
                   SizedBox(height: 30),
 
                   // --- MENU GRID ---
-                  Text("Menu Utama", 
-                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    "Menu Utama",
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   SizedBox(height: 15),
 
                   Expanded(
@@ -111,42 +148,47 @@ class HomeView extends StatelessWidget {
                       mainAxisSpacing: 15,
                       children: [
                         _buildMenuCard(
-                          icon: Icons.fingerprint, 
-                          color: Colors.blueAccent, 
+                          icon: Icons.fingerprint,
+                          color: Colors.blueAccent,
                           label: "Absen Masuk",
                           onTap: () {
-                             // Ambil token asli dari storage
-                             final box = GetStorage();
-                             String? token = box.read('token');
-                             
-                             if (token != null) {
-                               Get.to(() => AbsensiView(tokenUser: token));
-                             } else {
-                               Get.snackbar("Error", "Token tidak ditemukan, silakan login ulang");
-                             }
-                          }
+                            final box = GetStorage();
+                            String? token = box.read('token');
+                            if (token != null) {
+                              Get.to(() => AbsensiView(tokenUser: token));
+                            } else {
+                              Get.snackbar("Error", "Login dulu bos!");
+                            }
+                          },
                         ),
+
                         _buildMenuCard(
-                          icon: Icons.history, 
-                          color: Colors.orange, 
+                          icon: Icons.history,
+                          color: Colors.orange,
                           label: "Riwayat",
-                          onTap: () {}
+                          onTap: () {
+                            Get.to(() => RiwayatView());
+                          },
                         ),
+
                         _buildMenuCard(
-                          icon: Icons.mail_outline, 
-                          color: Colors.green, 
+                          icon: Icons.mail_outline,
+                          color: Colors.green,
                           label: "Izin / Sakit",
-                          onTap: () {}
+                          onTap: () {
+                            Get.snackbar("Info", "Fitur ini segera hadir!");
+                          },
                         ),
-                         _buildMenuCard(
-                          icon: Icons.logout, 
-                          color: Colors.redAccent, 
+
+                        _buildMenuCard(
+                          icon: Icons.logout,
+                          color: Colors.redAccent,
                           label: "Keluar",
-                          onTap: () => controller.logout(), // Panggil fungsi logout
+                          onTap: () => controller.logout(),
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -156,29 +198,21 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  // Widget Helper biar kodingan rapi
-  Widget _buildStatusItem(String label, String time) {
-    return Column(
-      children: [
-        Text(time, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text(label, style: GoogleFonts.poppins(color: Colors.grey)),
-      ],
-    );
-  }
-
-  Widget _buildMenuCard({required IconData icon, required Color color, required String label, required Function() onTap}) {
+  Widget _buildMenuCard({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required Function() onTap,
+  }) {
     return Material(
-      color: Colors.white, // Warna background pindah ke Material
+      color: Colors.white,
       borderRadius: BorderRadius.circular(15),
-      elevation: 2, // Kasih bayangan dikit biar timbul
+      elevation: 2,
       child: InkWell(
-        borderRadius: BorderRadius.circular(15), // Biar efek pencetnya bulat ngikutin border
-        onTap: onTap, // Fungsi onTap pindah ke sini
+        borderRadius: BorderRadius.circular(15),
+        onTap: onTap,
         child: Container(
-          // HAPUS decoration color disini biar transparan
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(15)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -191,7 +225,13 @@ class HomeView extends StatelessWidget {
                 child: Icon(icon, color: color, size: 28),
               ),
               SizedBox(height: 10),
-              Text(label, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500)),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),

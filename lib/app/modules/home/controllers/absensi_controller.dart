@@ -2,14 +2,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import '../../../data/providers/api_config.dart';
+import '../../../data/models/absensi_model.dart'; 
+import 'dart:convert';
 
 class AbsensiController extends GetxController {
   var isLoading = false.obs;
   var address = "Mencari lokasi...".obs;
   var isInArea = false.obs;
+
+  var historyList = <Absensi>[].obs; // List untuk nampung data
+  var isLoadingHistory = false.obs;
   
   // Data Lokasi
   Position? currentPosition;
@@ -31,7 +37,42 @@ class AbsensiController extends GetxController {
   void onInit() {
     super.onInit();
     // Otomatis cari lokasi saat halaman dibuka
-    determinePosition();
+    determinePosition(); // Cek lokasi
+    fetchHistory();
+  }
+
+  Future<void> fetchHistory() async {
+    try {
+      isLoadingHistory.value = true;
+      
+      // Ambil token
+      final box = GetStorage();
+      String? token = box.read('token');
+
+      if (token == null) return;
+
+      var response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/riwayat-absensi'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        var data = jsonResponse['data'] as List;
+        
+        // Masukkan data JSON ke dalam List Flutter
+        historyList.value = data.map((e) => Absensi.fromJson(e)).toList();
+      } else {
+        print("Gagal ambil history: ${response.body}");
+      }
+    } catch (e) {
+      print("Error history: $e");
+    } finally {
+      isLoadingHistory.value = false;
+    }
   }
 
   // 1. Cek Izin & Ambil Lokasi GPS
