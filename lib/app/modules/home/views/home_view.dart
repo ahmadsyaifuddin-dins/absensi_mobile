@@ -3,9 +3,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get_storage/get_storage.dart';
 import '../controllers/home_controller.dart';
-// PASTIKAN IMPORT FILE VIEW YANG BENAR DI SINI
 import '../views/absensi_view.dart';
-import '../views/riwayat_view.dart'; // Buat file ini jika belum ada (dari chat sebelumnya)
+import '../views/riwayat_view.dart';
 
 class HomeView extends StatelessWidget {
   final HomeController controller = Get.put(HomeController());
