@@ -117,14 +117,14 @@ class HomeView extends StatelessWidget {
                           style: GoogleFonts.poppins(color: Colors.grey),
                         ),
                         SizedBox(height: 5),
-                        Text(
-                          "07:30 WITA",
+                        Obx(() => Text(
+                          "${controller.jamMasukSekolah.value} WITA",
                           style: GoogleFonts.poppins(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.blueAccent,
                           ),
-                        ),
+                        )),
                         Divider(),
                         Text(
                           "Jangan lupa absen sebelum jam masuk!",

@@ -1,3 +1,4 @@
+import 'package:absensi/app/modules/home/views/pengaturan_sekolah_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -191,6 +192,15 @@ class GuruDashboardView extends StatelessWidget {
                            // Nanti arahkan ke fitur Cetak
                         },
                       ),
+
+                      _buildMenuButton(
+                      Icons.settings,
+                      "Lokasi Sekolah",
+                      Colors.blueGrey,
+                      () {
+                        Get.to(() => PengaturanSekolahView());
+                      },
+                    ),
                     ],
                   ),
 

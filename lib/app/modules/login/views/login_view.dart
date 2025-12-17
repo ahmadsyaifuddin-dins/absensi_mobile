@@ -22,12 +22,12 @@ class LoginView extends StatelessWidget {
               Icon(Icons.school_rounded, size: 80, color: Colors.blueAccent),
               SizedBox(height: 16),
               
-              Text(
-                "Absensi SMAN 3 BANJARMASIN",
+              Obx(() => Text(
+                controller.namaSekolah.value.toUpperCase(), // Biar Kapital Semua
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                     fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue[900]),
-              ),
+              )),
               Text(
                 "Silakan login untuk melanjutkan",
                 textAlign: TextAlign.center,

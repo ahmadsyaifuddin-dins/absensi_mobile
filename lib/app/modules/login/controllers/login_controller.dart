@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import '../../../data/providers/api_config.dart';
 import '../../home/views/home_view.dart'; // Dashboard SISWA
-import '../../home/views/guru_dashboard_view.dart'; // Dashboard GURU (File Baru)
+import '../../home/views/guru_dashboard_view.dart'; // Dashboard GURU
 import 'package:get_storage/get_storage.dart';
 
 class LoginController extends GetxController {
@@ -13,6 +13,36 @@ class LoginController extends GetxController {
 
   var isLoading = false.obs;
 
+  // Untuk menyimpan nama sekolah
+  var namaSekolah = "Absensi Sekolah".obs; 
+
+  // Jalan otomatis saat halaman dibuka
+  @override
+  void onInit() {
+    super.onInit();
+    getNamaSekolah(); // Panggil fungsi ambil nama sekolah
+  }
+
+  // Ambil Nama Sekolah dari API (Public)
+  Future<void> getNamaSekolah() async {
+    try {
+      // Tidak perlu token karena route /sekolah sudah kita buat Public di api.php
+      var response = await http.get(Uri.parse('${ApiConfig.baseUrl}/sekolah'));
+      
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body)['data'];
+        if (data != null) {
+          // Update variable namaSekolah biar UI berubah
+          namaSekolah.value = data['nama_sekolah'] ?? "Absensi Sekolah";
+        }
+      }
+    } catch (e) {
+      print("Gagal muat nama sekolah: $e");
+      // Kalau gagal (misal server mati), biarkan default
+    }
+  }
+
+  // 4. FUNGSI LOGIN
   Future<void> login() async {
     if (idC.text.isEmpty || passC.text.isEmpty) {
       Get.snackbar(
@@ -38,13 +68,12 @@ class LoginController extends GetxController {
         var userData = data['data']['user'];
         var token = data['data']['access_token'];
 
-        // --- LOGIC BARU DIMULAI DI SINI ---
-
+        // --- SIMPAN DATA KE STORAGE ---
         final box = GetStorage();
         box.write('token', token);
         box.write('user', userData);
 
-        // 1. Simpan Role secara spesifik biar nanti Main.dart gampang ngecek
+        // Simpan Role
         String role = userData['role'];
         box.write('role', role);
 
@@ -58,12 +87,10 @@ class LoginController extends GetxController {
         );
 
         Future.delayed(Duration(seconds: 1), () {
-          // 2. Cek Role untuk Mengarahkan Halaman
+          // Cek Role untuk Mengarahkan Halaman
           if (role == 'guru' || role == 'admin') {
-            // Kalau Guru -> Ke Dashboard Guru
             Get.offAll(() => GuruDashboardView());
           } else {
-            // Kalau Siswa -> Ke Dashboard Siswa (HomeView)
             Get.offAll(() => HomeView());
           }
         });

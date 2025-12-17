@@ -12,6 +12,7 @@ class HomeController extends GetxController {
 
   var sudahAbsen = false.obs; // Status absen
   var namaKelas = "-".obs;    // Nama Kelas
+  var jamMasukSekolah = "07:30".obs; // Default
 
   @override
   void onInit() {
@@ -22,6 +23,28 @@ class HomeController extends GetxController {
     }
     // Cek Status Absen & Kelas ke Server
     checkStatusToday();
+    getJamMasuk();
+  }
+
+  Future<void> getJamMasuk() async {
+    try {
+      final box = GetStorage();
+      var response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/sekolah'),
+        headers: {'Authorization': 'Bearer ${box.read('token')}'}
+      );
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body)['data'];
+        if (data != null) {
+          // Data dari DB: 07:30:00 -> Kita ambil 5 karakter awal (07:30)
+          String jamRaw = data['jam_masuk'];
+          jamMasukSekolah.value = jamRaw.length > 5 ? jamRaw.substring(0, 5) : jamRaw;
+        }
+      }
+    } catch (e) {
+      print("Err Jam: $e");
+    }
   }
 
   Future<void> checkStatusToday() async {

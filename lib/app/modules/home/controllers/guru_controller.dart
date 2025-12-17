@@ -36,7 +36,7 @@ class GuruController extends GetxController {
 
       // TAMBAHKAN PRINT INI UNTUK DEBUGGING
       print("STATUS CODE: ${response.statusCode}");
-      print("RESPON SERVER: ${response.body}"); 
+      // print("RESPON SERVER: ${response.body}"); 
       // -------------------------------------------
 
       if (response.statusCode == 200) {
