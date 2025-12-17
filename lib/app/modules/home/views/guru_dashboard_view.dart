@@ -1,5 +1,6 @@
 import 'package:absensi/app/modules/home/views/data_siswa_view.dart';
 import 'package:absensi/app/modules/home/views/pengaturan_sekolah_view.dart';
+import 'package:absensi/app/modules/home/views/rekap_kelas_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -170,10 +171,12 @@ class GuruDashboardView extends StatelessWidget {
                       
                       // 2. Rekap Kelas
                       _buildMenuButton(
-                        Icons.list_alt,
+                        Icons.meeting_room, // Icon Kelas
                         "Rekap Kelas",
-                        Colors.blue,
-                        () {},
+                        Colors.teal,
+                        () {
+                           Get.to(() => RekapKelasView());
+                        },
                       ),
 
                       // 3. Data Siswa
