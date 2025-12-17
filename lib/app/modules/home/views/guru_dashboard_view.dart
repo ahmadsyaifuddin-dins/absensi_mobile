@@ -1,3 +1,4 @@
+import 'package:absensi/app/modules/home/views/data_siswa_view.dart';
 import 'package:absensi/app/modules/home/views/pengaturan_sekolah_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -180,7 +181,9 @@ class GuruDashboardView extends StatelessWidget {
                         Icons.people,
                         "Data Siswa",
                         Colors.purple,
-                        () {},
+                        () {
+                           Get.to(() => DataSiswaView()); 
+                        },
                       ),
 
                       // 4. Cetak Laporan

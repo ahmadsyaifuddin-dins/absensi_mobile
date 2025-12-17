@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart'; // <--- IMPORT INI PENTING
 import '../controllers/absensi_controller.dart';
 import '../../../data/providers/api_config.dart';
 
 class RiwayatView extends StatelessWidget {
-  // Panggil Controller yang sama
   final AbsensiController controller = Get.put(AbsensiController());
 
   @override
   Widget build(BuildContext context) {
-    // Panggil fetchHistory saat halaman dibuka
+    // Inisialisasi format tanggal Indonesia
+    initializeDateFormatting('id_ID', null); 
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.fetchHistory();
     });
@@ -58,12 +60,13 @@ class RiwayatView extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // FOTO BUKTI
+                  // FOTO
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: item.fotoMasuk != null
+                    child: item.fotoMasuk != null || item.buktiIzin != null
+                      // Logic: Kalau ada foto selfie pakai itu, kalau gak ada cek bukti izin
                       ? Image.network(
-                          "${ApiConfig.imageUrl}${item.fotoMasuk}",
+                          "${ApiConfig.imageUrl}${item.fotoMasuk ?? item.buktiIzin}",
                           width: 60, height: 60, fit: BoxFit.cover,
                           errorBuilder: (c,e,s) => Container(width: 60, height: 60, color: Colors.grey[200], child: Icon(Icons.broken_image)),
                         )
@@ -71,7 +74,7 @@ class RiwayatView extends StatelessWidget {
                   ),
                   SizedBox(width: 15),
                   
-                  // DETAIL ABSEN
+                  // TEXT INFO
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,18 +84,13 @@ class RiwayatView extends StatelessWidget {
                           style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
                         ),
                         SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.access_time, size: 14, color: Colors.grey),
-                            SizedBox(width: 5),
-                            Text("Masuk: ${item.jamMasuk ?? '-'}", style: GoogleFonts.poppins(fontSize: 12)),
-                          ],
-                        ),
+                        if (item.status == 'Hadir')
+                          Text("Masuk: ${item.jamMasuk ?? '-'}", style: GoogleFonts.poppins(fontSize: 12))
+                        else 
+                          Text("Alasan: ${item.catatan ?? '-'}", style: GoogleFonts.poppins(fontSize: 12, fontStyle: FontStyle.italic)),
+                        
                         if (item.terlambat == true)
-                          Text(
-                            "Telat ${item.menitKeterlambatan} menit",
-                            style: GoogleFonts.poppins(color: Colors.redAccent, fontSize: 11, fontStyle: FontStyle.italic),
-                          )
+                          Text("Telat ${item.menitKeterlambatan} menit", style: GoogleFonts.poppins(color: Colors.redAccent, fontSize: 11)),
                       ],
                     ),
                   ),
@@ -101,13 +99,13 @@ class RiwayatView extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: item.terlambat == true ? Colors.orange.withOpacity(0.2) : Colors.green.withOpacity(0.2),
+                      color: _getColor(item.status!).withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       item.status ?? "Hadir",
                       style: GoogleFonts.poppins(
-                        color: item.terlambat == true ? Colors.orange[800] : Colors.green[800], 
+                        color: _getColor(item.status!), 
                         fontWeight: FontWeight.bold, 
                         fontSize: 12
                       ),
@@ -122,10 +120,18 @@ class RiwayatView extends StatelessWidget {
     );
   }
 
+  Color _getColor(String status) {
+    if (status == 'Hadir') return Colors.green[800]!;
+    if (status == 'Sakit') return Colors.orange[800]!;
+    if (status == 'Izin') return Colors.blue[800]!;
+    return Colors.red;
+  }
+
   String _formatDate(String? dateStr) {
     if (dateStr == null) return "-";
     try {
       DateTime dt = DateTime.parse(dateStr);
+      // Pastikan sudah import intl/date_symbol_data_local.dart
       return DateFormat('EEEE, d MMMM y', 'id_ID').format(dt);
     } catch (e) {
       return dateStr;

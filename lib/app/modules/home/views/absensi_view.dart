@@ -1,138 +1,187 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:geolocator/geolocator.dart'; // Untuk hitung jarak di UI
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/absensi_controller.dart';
-import 'dart:io';
 
 class AbsensiView extends StatelessWidget {
+  // Terima token dari halaman sebelumnya
   final String tokenUser;
   AbsensiView({required this.tokenUser});
 
-  // Inject Controller
   final AbsensiController controller = Get.put(AbsensiController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text("Absensi Masuk", style: GoogleFonts.poppins()),
+        title: Text("Absen Masuk", style: GoogleFonts.poppins()),
         backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
-        centerTitle: true,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 1. INFORMASI LOKASI
-            Obx(() => Container(
-              padding: EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: controller.isInArea.value ? Colors.green[50] : Colors.red[50],
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: controller.isInArea.value ? Colors.green : Colors.red
-                )
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    controller.isInArea.value ? Icons.check_circle : Icons.warning,
-                    color: controller.isInArea.value ? Colors.green : Colors.red,
-                    size: 30,
-                  ),
-                  SizedBox(width: 15),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          controller.isInArea.value ? "Di Dalam Area" : "Di Luar Jangkauan",
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: controller.isInArea.value ? Colors.green : Colors.red),
-                        ),
-                        Text(
-                          controller.address.value,
-                          style: GoogleFonts.poppins(fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => controller.determinePosition(), 
-                    icon: Icon(Icons.refresh, color: Colors.grey)
-                  )
-                ],
-              ),
-            )),
-            
+            // --- 1. STATUS LOKASI ---
+            _buildLocationCard(),
+
             SizedBox(height: 20),
 
-            // 2. PREVIEW FOTO BESAR
-            Obx(() => Container(
-              height: 350, // Lebih besar biar enak selfie
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.grey.shade300),
-                image: controller.imageFile.value != null 
-                  ? DecorationImage(
-                      // KITA BUNGKUS PAKAI File(...) DAN AMBIL .path NYA
-                      image: FileImage(File(controller.imageFile.value!.path)),
-                      fit: BoxFit.cover
-                    )
-                  : null
+            // --- 2. FOTO SELFIE ---
+            _buildCameraSection(),
+
+            SizedBox(height: 30),
+
+            // --- 3. TOMBOL KIRIM ---
+            Obx(() => SizedBox(
+              height: 50,
+              child: ElevatedButton(
+                onPressed: controller.isLoading.value
+                    ? null
+                    : () => controller.absenMasuk(tokenUser),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: controller.isLoading.value
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Text("KIRIM ABSENSI SEKARANG", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white)),
               ),
-              child: controller.imageFile.value == null
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.camera_enhance, size: 60, color: Colors.grey),
-                        SizedBox(height: 10),
-                        Text("Pastikan wajah terlihat jelas", style: GoogleFonts.poppins(color: Colors.grey))
-                      ],
-                    )
-                  : null,
             )),
-
-            SizedBox(height: 25),
-
-            // 3. TOMBOL AKSI
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => controller.pickImage(false),
-                    icon: Icon(Icons.camera_alt), 
-                    label: Text("Ambil Foto"),
-                    style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
-                    ),
-                  ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Obx(() => ElevatedButton.icon(
-                    onPressed: (controller.isLoading.value || !controller.isInArea.value || controller.imageFile.value == null) 
-                      ? null 
-                      : () => controller.submitAbsen(tokenUser),
-                    icon: controller.isLoading.value ? SizedBox() : Icon(Icons.send),
-                    label: controller.isLoading.value 
-                      ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text("Kirim Absen"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
-                    ),
-                  )),
-                ),
-              ],
-            ),
           ],
         ),
+      ),
+    );
+  }
+
+  // WIDGET KARTU LOKASI
+  Widget _buildLocationCard() {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))],
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.location_on, size: 40, color: Colors.redAccent),
+          SizedBox(height: 10),
+          Text("Lokasi Anda Saat Ini", style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12)),
+          SizedBox(height: 5),
+          
+          // ALAMAT DARI CONTROLLER
+          Obx(() => Text(
+            controller.alamat.value,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+          )),
+          
+          Divider(height: 30),
+
+          // INDIKATOR JARAK (Hijau/Merah)
+          Obx(() {
+            if (controller.currentPosition.value == null) {
+              return Text("Menunggu GPS...", style: TextStyle(color: Colors.orange));
+            }
+
+            // Hitung Jarak Realtime untuk UI
+            double jarak = Geolocator.distanceBetween(
+              controller.currentPosition.value!.latitude,
+              controller.currentPosition.value!.longitude,
+              controller.schoolLat.value,
+              controller.schoolLng.value
+            );
+
+            bool isInArea = jarak <= controller.radiusMeter.value;
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isInArea ? Icons.check_circle : Icons.cancel,
+                  color: isInArea ? Colors.green : Colors.red,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  isInArea 
+                    ? "Di Dalam Area (${jarak.toInt()}m)" 
+                    : "Di Luar Area (${jarak.toInt()}m)",
+                  style: GoogleFonts.poppins(
+                    color: isInArea ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.bold
+                  ),
+                ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // WIDGET KAMERA
+  Widget _buildCameraSection() {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))],
+      ),
+      child: Column(
+        children: [
+          Text("Foto Selfie", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          SizedBox(height: 15),
+          
+          // PREVIEW FOTO
+          Obx(() {
+            return controller.image.value == null
+              ? Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey)
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.camera_alt, size: 50, color: Colors.grey),
+                      Text("Belum ada foto", style: GoogleFonts.poppins(color: Colors.grey))
+                    ],
+                  ),
+                )
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.file(
+                    controller.image.value!,
+                    height: 300,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                );
+          }),
+
+          SizedBox(height: 15),
+          
+          // TOMBOL AMBIL FOTO
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => controller.pickImage(),
+              icon: Icon(Icons.camera_alt),
+              label: Text("Ambil Foto"),
+              style: OutlinedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 12)),
+            ),
+          )
+        ],
       ),
     );
   }

@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../controllers/absensi_controller.dart';
 
 class IzinView extends StatelessWidget {
-  // Kita reuse controller Absensi biar hemat
   final AbsensiController controller = Get.put(AbsensiController());
 
   @override
   Widget build(BuildContext context) {
-    // Reset form saat dibuka
-    controller.imageFile.value = null;
+    // Reset form
+    controller.image.value = null; // Variable sudah diganti jadi 'image'
     controller.alasanC.clear();
 
     return Scaffold(
       appBar: AppBar(
         title: Text("Pengajuan Izin", style: GoogleFonts.poppins()),
-        backgroundColor: Colors.green, // Warna hijau untuk Izin
+        backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -58,7 +58,9 @@ class IzinView extends StatelessWidget {
             
             // Preview Foto
             Obx(() => GestureDetector(
-              onTap: () => controller.pickImage(true),
+              // Di sini kita bisa pilih mau Kamera atau Galeri
+              // Contoh: Pakai Galeri untuk surat izin
+              onTap: () => controller.pickImage(ImageSource.gallery), 
               child: Container(
                 height: 200,
                 width: double.infinity,
@@ -66,23 +68,22 @@ class IzinView extends StatelessWidget {
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.grey),
-                  image: controller.imageFile.value != null 
-                    // SAMA, BUNGKUS PAKAI File(...) DAN AMBIL .path
-                    ? DecorationImage(
-                        image: FileImage(File(controller.imageFile.value!.path)), 
-                        fit: BoxFit.cover
-                      )
-                    : null
                 ),
-                child: controller.imageFile.value == null 
-                  ? Column(
+                child: controller.image.value != null 
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.file(
+                        controller.image.value!, // Pakai 'image' bukan 'imageFile'
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.camera_alt, size: 50, color: Colors.grey),
-                        Text("Tap untuk ambil foto", style: GoogleFonts.poppins(color: Colors.grey))
+                        Text("Tap untuk upload foto", style: GoogleFonts.poppins(color: Colors.grey))
                       ],
-                    )
-                  : null,
+                    ),
               ),
             )),
 
