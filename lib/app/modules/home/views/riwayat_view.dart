@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart'; // <--- IMPORT INI PENTING
+import 'package:intl/date_symbol_data_local.dart';
 import '../controllers/absensi_controller.dart';
 import '../../../data/providers/api_config.dart';
 
@@ -130,8 +130,10 @@ class RiwayatView extends StatelessWidget {
   String _formatDate(String? dateStr) {
     if (dateStr == null) return "-";
     try {
-      DateTime dt = DateTime.parse(dateStr);
-      // Pastikan sudah import intl/date_symbol_data_local.dart
+      // TAMBAHKAN .toLocal() DI SINI
+      // Gunanya mengubah waktu server (UTC) menjadi waktu HP User (WITA/WIB)
+      DateTime dt = DateTime.parse(dateStr).toLocal(); 
+      
       return DateFormat('EEEE, d MMMM y', 'id_ID').format(dt);
     } catch (e) {
       return dateStr;
