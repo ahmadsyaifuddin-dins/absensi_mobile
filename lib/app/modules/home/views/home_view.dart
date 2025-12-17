@@ -1,3 +1,4 @@
+import 'package:absensi/app/modules/home/views/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +7,7 @@ import '../controllers/home_controller.dart';
 import '../views/absensi_view.dart';
 import '../views/riwayat_view.dart';
 import '../views/izin_view.dart';
+import '../../../data/providers/api_config.dart';
 
 class HomeView extends StatelessWidget {
   final HomeController controller = Get.put(HomeController());
@@ -50,44 +52,50 @@ class HomeView extends StatelessWidget {
                         children: [
                           Text(
                             "Halo, Selamat Pagi 👋",
+                            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
+                          ),
+                          Obx(() => Text(
+                            controller.user['nama'] ?? "User",
                             style: GoogleFonts.poppins(
-                              color: Colors.white70,
-                              fontSize: 14,
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
-                          ),
-                          Obx(
-                            () => Text(
-                              controller.user['nama'] ?? "User",
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize:
-                                    18, // Agak dikecilin biar gak nabrak kalau nama panjang
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Obx(
-                            () => Text(
-                              "Siswa / ${controller.user['nisn_nip'] ?? '-'}", // Tampilkan NISN
-                              style: GoogleFonts.poppins(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
+                          )),
+                          
+                          // TAMPILKAN KELAS & NISN
+                          Obx(() => Text(
+                            // Format: XII RPL 1 | 12345678
+                            "${controller.namaKelas.value} | ${controller.user['nisn_nip'] ?? '-'}",
+                            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
+                          )),
                         ],
                       ),
-                      CircleAvatar(
-                        radius: 25,
-                        backgroundColor: Colors.white24,
-                        child: Icon(Icons.person, color: Colors.white),
+
+                      // 2. Avatar Foto Profil (Bisa Diklik)
+                      GestureDetector(
+                        onTap: () {
+                          Get.to(() => ProfileView());
+                        },
+                        child: CircleAvatar(
+                          radius: 25,
+                          backgroundColor: Colors.white24,
+                          // Tampilkan gambar jika ada, jika null tampilkan null
+                          backgroundImage: controller.user['foto_profil'] != null 
+                              ? NetworkImage("${ApiConfig.imageUrl}${controller.user['foto_profil']}") as ImageProvider
+                              : null,
+                          // Jika gambar null, tampilkan Icon
+                          child: controller.user['foto_profil'] == null 
+                              ? Icon(Icons.person, color: Colors.white) 
+                              : null,
+                        ),
                       ),
                     ],
                   ),
 
                   SizedBox(height: 30),
 
-                  // --- CARD STATUS HARI INI (Versi Single: Cuma Masuk) ---
+                  // CARD STATUS HARI INI (Versi Single: Cuma Masuk)
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.all(20),
@@ -147,20 +155,33 @@ class HomeView extends StatelessWidget {
                       crossAxisSpacing: 15,
                       mainAxisSpacing: 15,
                       children: [
-                        _buildMenuCard(
-                          icon: Icons.fingerprint,
-                          color: Colors.blueAccent,
-                          label: "Absen Masuk",
-                          onTap: () {
-                            final box = GetStorage();
-                            String? token = box.read('token');
-                            if (token != null) {
-                              Get.to(() => AbsensiView(tokenUser: token));
-                            } else {
-                              Get.snackbar("Error", "Login dulu bos!");
-                            }
-                          },
-                        ),
+                        // TOMBOL ABSEN MASUK (DENGAN OBX)
+                        Obx(() {
+                          bool isDone = controller.sudahAbsen.value;
+                          return _buildMenuCard(
+                            // Kalau sudah absen ganti icon Centang, kalau belum Fingerprint
+                            icon: isDone ? Icons.check_circle : Icons.fingerprint,
+                            // Kalau sudah absen warnanya Hijau, kalau belum Biru
+                            color: isDone ? Colors.green : Colors.blueAccent,
+                            // Ganti Label
+                            label: isDone ? "Sudah Absen" : "Absen Masuk",
+                            onTap: () {
+                              if (isDone) {
+                                // Kalau sudah absen, kasih notif aja
+                                Get.snackbar("Info", "Kamu sudah absen hari ini!", 
+                                  backgroundColor: Colors.green, colorText: Colors.white);
+                              } else {
+                                // Kalau belum, baru buka halaman absen
+                                final box = GetStorage();
+                                String? token = box.read('token');
+                                if (token != null) {
+                                  Get.to(() => AbsensiView(tokenUser: token))
+                                     ?.then((_) => controller.checkStatusToday()); // Refresh pas balik
+                                }
+                              }
+                            },
+                          );
+                        }),
 
                         _buildMenuCard(
                           icon: Icons.history,

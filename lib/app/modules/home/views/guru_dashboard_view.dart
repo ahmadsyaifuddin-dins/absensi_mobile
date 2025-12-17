@@ -5,24 +5,27 @@ import 'package:get_storage/get_storage.dart';
 import '../../login/views/login_view.dart';
 import '../controllers/guru_controller.dart';
 import 'validasi_izin_view.dart';
+import 'profile_view.dart';
+import '../../../data/providers/api_config.dart';
 
 class GuruDashboardView extends StatelessWidget {
 
   final GuruController controller = Get.put(GuruController());
+  
   @override
   Widget build(BuildContext context) {
     final box = GetStorage();
     var user = box.read('user') ?? {'nama': 'Bapak/Ibu Guru', 'nisn_nip': '-'};
 
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Background agak abu terang
+      backgroundColor: Colors.grey[50], 
       body: Stack(
         children: [
           // HEADER BACKGROUND
           Container(
             height: 220,
             decoration: BoxDecoration(
-              color: Colors.indigo, // Warna khas Guru
+              color: Colors.indigo,
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
@@ -65,19 +68,27 @@ class GuruDashboardView extends StatelessWidget {
 
                   SizedBox(height: 10),
 
-                  // --- PROFIL GURU ---
+                  // --- PROFIL GURU (Klik Foto untuk Edit Profil) ---
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.person,
-                          size: 35,
-                          color: Colors.indigo,
+                      GestureDetector(
+                        onTap: () {
+                           Get.to(() => ProfileView());
+                        },
+                        child: CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.white,
+                          backgroundImage: user['foto_profil'] != null 
+                              ? NetworkImage("${ApiConfig.imageUrl}${user['foto_profil']}") as ImageProvider
+                              : null,
+                          child: user['foto_profil'] == null 
+                              ? Icon(Icons.person, size: 35, color: Colors.indigo) 
+                              : null,
                         ),
                       ),
+                      
                       SizedBox(width: 15),
+                      
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -101,11 +112,12 @@ class GuruDashboardView extends StatelessWidget {
                   ),
 
                   SizedBox(height: 30),
+                  
+                  // --- RINGKASAN HARI INI ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text("Ringkasan Hari Ini", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
-                      // Tombol Refresh Kecil
                       InkWell(
                         onTap: () => controller.refreshData(),
                         child: Icon(Icons.refresh, color: Colors.white70, size: 20),
@@ -114,7 +126,6 @@ class GuruDashboardView extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   
-                  // BUNGKUS ROW KARTU DENGAN OBX
                   Obx(() => Row(
                     children: [
                       _buildSummaryCard("Hadir", "${controller.stats['hadir']}", Colors.green),
@@ -125,7 +136,8 @@ class GuruDashboardView extends StatelessWidget {
                     ],
                   )),
 
-                  // --- MENU UTAMA ---
+                  // --- MENU ADMINISTRASI ---
+                  SizedBox(height: 30),
                   Text(
                     "Menu Administrasi",
                     style: GoogleFonts.poppins(
@@ -144,6 +156,7 @@ class GuruDashboardView extends StatelessWidget {
                     mainAxisSpacing: 15,
                     childAspectRatio: 1.3,
                     children: [
+                      // 1. Validasi Izin
                       _buildMenuButton(
                         Icons.verified,
                         "Validasi Izin",
@@ -152,23 +165,31 @@ class GuruDashboardView extends StatelessWidget {
                           Get.to(() => ValidasiIzinView());
                         },
                       ),
+                      
+                      // 2. Rekap Kelas
                       _buildMenuButton(
                         Icons.list_alt,
                         "Rekap Kelas",
                         Colors.blue,
                         () {},
                       ),
+
+                      // 3. Data Siswa
                       _buildMenuButton(
                         Icons.people,
                         "Data Siswa",
                         Colors.purple,
                         () {},
                       ),
+
+                      // 4. Cetak Laporan
                       _buildMenuButton(
                         Icons.print,
                         "Cetak Laporan",
                         Colors.redAccent,
-                        () {},
+                        () {
+                           // Nanti arahkan ke fitur Cetak
+                        },
                       ),
                     ],
                   ),
@@ -183,6 +204,7 @@ class GuruDashboardView extends StatelessWidget {
     );
   }
 
+  // --- WIDGET HELPER ---
   Widget _buildSummaryCard(String label, String count, Color color) {
     return Expanded(
       child: Container(
