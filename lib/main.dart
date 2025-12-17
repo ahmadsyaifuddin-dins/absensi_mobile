@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
       ),
       home:
-          initialRoute, // <--- PENTING: Jangan home: HomeView(), tapi pakai variabel
+          initialRoute,
     );
   }
 }

@@ -3,8 +3,12 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../login/views/login_view.dart';
+import '../controllers/guru_controller.dart';
+import 'validasi_izin_view.dart';
 
 class GuruDashboardView extends StatelessWidget {
+
+  final GuruController controller = Get.put(GuruController());
   @override
   Widget build(BuildContext context) {
     final box = GetStorage();
@@ -97,27 +101,29 @@ class GuruDashboardView extends StatelessWidget {
                   ),
 
                   SizedBox(height: 30),
-
-                  // --- RINGKASAN HARI INI (Dummy Data) ---
-                  Text(
-                    "Ringkasan Hari Ini",
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 10),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildSummaryCard("Hadir", "32", Colors.green),
-                      SizedBox(width: 10),
-                      _buildSummaryCard("Telat", "5", Colors.orange),
-                      SizedBox(width: 10),
-                      _buildSummaryCard("Izin", "2", Colors.blue),
+                      Text("Ringkasan Hari Ini", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                      // Tombol Refresh Kecil
+                      InkWell(
+                        onTap: () => controller.refreshData(),
+                        child: Icon(Icons.refresh, color: Colors.white70, size: 20),
+                      )
                     ],
                   ),
-
-                  SizedBox(height: 30),
+                  SizedBox(height: 10),
+                  
+                  // BUNGKUS ROW KARTU DENGAN OBX
+                  Obx(() => Row(
+                    children: [
+                      _buildSummaryCard("Hadir", "${controller.stats['hadir']}", Colors.green),
+                      SizedBox(width: 10),
+                      _buildSummaryCard("Sakit/Izin", "${controller.stats['sakit']! + controller.stats['izin']!}", Colors.orange),
+                      SizedBox(width: 10),
+                      _buildSummaryCard("Belum", "${controller.stats['belum_absen']}", Colors.redAccent),
+                    ],
+                  )),
 
                   // --- MENU UTAMA ---
                   Text(
@@ -142,7 +148,9 @@ class GuruDashboardView extends StatelessWidget {
                         Icons.verified,
                         "Validasi Izin",
                         Colors.orange,
-                        () {},
+                        () {
+                          Get.to(() => ValidasiIzinView());
+                        },
                       ),
                       _buildMenuButton(
                         Icons.list_alt,
