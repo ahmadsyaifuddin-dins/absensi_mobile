@@ -1,15 +1,17 @@
-import 'package:absensi/app/modules/home/views/data_siswa_view.dart';
-import 'package:absensi/app/modules/home/views/pengaturan_sekolah_view.dart';
-import 'package:absensi/app/modules/home/views/rekap_kelas_view.dart';
+import 'package:absensi/app/modules/home/views/guru/data_siswa_view.dart';
+import 'package:absensi/app/modules/home/views/guru/laporan_harian_view.dart';
+import 'package:absensi/app/modules/home/views/guru/menu_laporan_view.dart';
+import 'package:absensi/app/modules/home/views/guru/pengaturan_sekolah_view.dart';
+import 'package:absensi/app/modules/home/views/guru/rekap_kelas_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get_storage/get_storage.dart';
-import '../../login/views/login_view.dart';
-import '../controllers/guru_controller.dart';
+import '../../../login/views/login_view.dart';
+import '../../controllers/guru_controller.dart';
 import 'validasi_izin_view.dart';
-import 'profile_view.dart';
-import '../../../data/providers/api_config.dart';
+import '../profile_view.dart';
+import '../../../../data/providers/api_config.dart';
 
 class GuruDashboardView extends StatelessWidget {
 
@@ -188,16 +190,16 @@ class GuruDashboardView extends StatelessWidget {
                            Get.to(() => DataSiswaView()); 
                         },
                       ),
-
-                      // 4. Cetak Laporan
+                      // 4. Pusat Laporan
                       _buildMenuButton(
-                        Icons.print,
-                        "Cetak Laporan",
-                        Colors.redAccent,
-                        () {
-                           // Nanti arahkan ke fitur Cetak
-                        },
-                      ),
+                      Icons.analytics, // Icon Grafik
+                      "Pusat Laporan", // Ganti nama biar keren
+                      Colors.teal, // Warna
+                      () {
+                         // ARAHKAN KE MENU SUB-LAPORAN
+                         Get.to(() => MenuLaporanView()); 
+                      },
+                    ),
 
                       _buildMenuButton(
                       Icons.settings,

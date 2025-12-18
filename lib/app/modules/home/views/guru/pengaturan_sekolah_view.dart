@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../controllers/sekolah_controller.dart';
+import '../../controllers/sekolah_controller.dart';
 
 class PengaturanSekolahView extends StatelessWidget {
   final controller = Get.put(SekolahController());

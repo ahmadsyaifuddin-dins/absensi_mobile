@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import '../controllers/absensi_controller.dart';
-import '../../../data/providers/api_config.dart';
+import '../../controllers/absensi_controller.dart';
+import '../../../../data/providers/api_config.dart';
 
 class RiwayatView extends StatelessWidget {
   final AbsensiController controller = Get.put(AbsensiController());

@@ -7,7 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 // Import View
 import 'app/modules/login/views/login_view.dart';
 import 'app/modules/home/views/home_view.dart';
-import 'app/modules/home/views/guru_dashboard_view.dart';
+import 'app/modules/home/views/guru/guru_dashboard_view.dart';
 
 void main() async {
   // 1. WAJIB: Pastikan binding flutter siap dulu

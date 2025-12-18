@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import '../../../data/providers/api_config.dart';
 import '../../home/views/home_view.dart'; // Dashboard SISWA
-import '../../home/views/guru_dashboard_view.dart'; // Dashboard GURU
+import '../../home/views/guru/guru_dashboard_view.dart'; // Dashboard GURU
 import 'package:get_storage/get_storage.dart';
 
 class LoginController extends GetxController {

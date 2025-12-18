@@ -19,7 +19,6 @@ class Absensi {
     this.penggunaId,
     this.tanggal,
     this.jamMasuk,
-    this.jamKeluar,
     this.fotoMasuk,
     this.status,
     this.validasi,

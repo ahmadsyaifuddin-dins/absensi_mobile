@@ -4,9 +4,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get_storage/get_storage.dart';
 import '../controllers/home_controller.dart';
-import '../views/absensi_view.dart';
-import '../views/riwayat_view.dart';
-import '../views/izin_view.dart';
+import 'siswa/absensi_view.dart';
+import 'siswa/riwayat_view.dart';
+import 'siswa/izin_view.dart';
 import '../../../data/providers/api_config.dart';
 
 class HomeView extends StatelessWidget {

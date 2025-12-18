@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart'; // Untuk hitung jarak di UI
 import 'package:google_fonts/google_fonts.dart';
-import '../controllers/absensi_controller.dart';
+import '../../controllers/absensi_controller.dart';
 
 class AbsensiView extends StatelessWidget {
   // Terima token dari halaman sebelumnya

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../controllers/siswa_controller.dart';
-import '../../../data/providers/api_config.dart';
+import '../../controllers/siswa_controller.dart';
+import '../../../../data/providers/api_config.dart';
 
 class DataSiswaView extends StatelessWidget {
   final controller = Get.put(SiswaController());

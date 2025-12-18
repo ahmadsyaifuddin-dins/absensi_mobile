@@ -4,13 +4,14 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../../../data/providers/api_config.dart';
+import '../../../../data/providers/api_config.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
 
 class ValidasiIzinController extends GetxController {
   var listIzin = [].obs;
   var isLoading = false.obs;
+  var selectedStatusExport = 'Pending'.obs; // Default
 
   @override
   void onInit() {

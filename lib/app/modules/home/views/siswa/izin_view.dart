@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../controllers/absensi_controller.dart';
+import '../../controllers/absensi_controller.dart';
 
 class IzinView extends StatelessWidget {
   final AbsensiController controller = Get.put(AbsensiController());
