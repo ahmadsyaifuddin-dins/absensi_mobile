@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:absensi/app/modules/home/views/admin/admin_dashboard_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -88,10 +89,12 @@ class LoginController extends GetxController {
 
         Future.delayed(Duration(seconds: 1), () {
           // Cek Role untuk Mengarahkan Halaman
-          if (role == 'guru' || role == 'admin') {
-            Get.offAll(() => GuruDashboardView());
+          if (role == 'admin') {
+             Get.offAll(() => AdminDashboardView());
+          } else if (role == 'guru') {
+             Get.offAll(() => GuruDashboardView());
           } else {
-            Get.offAll(() => HomeView());
+             Get.offAll(() => HomeView());
           }
         });
       } else {

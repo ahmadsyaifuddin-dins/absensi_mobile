@@ -1,3 +1,4 @@
+import 'package:absensi/app/modules/home/views/admin/admin_dashboard_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -36,17 +37,18 @@ class MyApp extends StatelessWidget {
     // Cek: Apakah ada token tersimpan?
     if (box.hasData('token')) {
       // Cek Role: Siswa atau Guru?
-      String? role = box.read('role'); // Pastikan saat login kamu simpan 'role'
+      String? role = box.read('role'); // Pastikan saat login simpan 'role'
 
       print("Auto-Login terdeteksi. Role: $role"); // Cek di Console
 
-      if (role == 'guru' || role == 'admin') {
+      if (role == 'admin') {
+        initialRoute = AdminDashboardView();
+      } else if (role == 'guru') {
         initialRoute = GuruDashboardView();
       } else {
         initialRoute = HomeView();
       }
     }
-    // -------------------------------------
 
     return GetMaterialApp(
       title: 'Absensi SMAN 3',
