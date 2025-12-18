@@ -44,14 +44,24 @@ class LaporanBulananView extends StatelessWidget {
                     SizedBox(width: 10),
                     // DROPDOWN TAHUN
                     Expanded(
-                      flex: 1,
-                      child: Obx(() => DropdownButtonFormField<int>(
-                        value: controller.selectedYear.value,
-                        decoration: InputDecoration(labelText: "Tahun", border: OutlineInputBorder()),
-                        items: [2024, 2025, 2026].map((y) => DropdownMenuItem(value: y, child: Text("$y"))).toList(),
-                        onChanged: (val) => controller.selectedYear.value = val!,
-                      )),
-                    ),
+                    flex: 1,
+                    child: Obx(() => DropdownButtonFormField<int>(
+                      value: controller.selectedYear.value,
+                      isExpanded: true, // 1. Pastikan teks mengisi ruang tersedia
+                      decoration: InputDecoration(
+                        labelText: "Tahun", 
+                        border: OutlineInputBorder(),
+                        // 2. Kecilkan padding horizontal (misal jadi 5 atau 8)
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                      ),
+                      items: [2024, 2025, 2026].map((y) => DropdownMenuItem(
+                        value: y, 
+                        // 3. (Opsional) Bungkus teks dengan FittedBox biar aman
+                        child: FittedBox(fit: BoxFit.scaleDown, child: Text("$y")) 
+                      )).toList(),
+                      onChanged: (val) => controller.selectedYear.value = val!,
+                    )),
+                  ),
                   ],
                 ),
                 SizedBox(height: 10),

@@ -46,16 +46,28 @@ class LaporanRekapIzinView extends StatelessWidget {
                     Expanded(
                       child: Obx(() => DropdownButtonFormField<int>(
                         value: controller.selectedMonth.value,
+                        isExpanded: true, // 1. Wajib true
                         items: List.generate(12, (index) => index + 1)
                             .map((m) => DropdownMenuItem(
                                 value: m, 
-                                child: Text(DateFormat('MMMM', 'id_ID').format(DateTime(2022, m, 1)))
+                                // 2. SOLUSI UTAMA: Bungkus teks bulan dgn FittedBox
+                                // Jadi kalau teks "September" kepanjangan, dia akan mengecilkan font otomatis
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft, // Rata kiri
+                                  child: Text(DateFormat('MMMM', 'id_ID').format(DateTime(2022, m, 1)))
+                                )
                             )).toList(),
                         onChanged: (val) {
                           controller.selectedMonth.value = val!;
                           controller.fetchRekapIzin();
                         },
-                        decoration: InputDecoration(labelText: "Bulan", border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 10)),
+                        decoration: InputDecoration(
+                          labelText: "Bulan", 
+                          border: OutlineInputBorder(), 
+                          // 3. Padding dikecilkan
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0)
+                        ),
                       )),
                     ),
                     SizedBox(width: 10),

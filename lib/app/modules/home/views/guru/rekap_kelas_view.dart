@@ -40,25 +40,28 @@ class RekapKelasView extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
               color: Colors.white,
               child: InkWell(
-                onTap: () => _showDialog(context, item), // Edit saat diklik
+                onTap: () => _showDialog(context, item),
                 child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.class_, size: 40, color: Colors.teal),
-                      SizedBox(height: 10),
-                      Text(
-                        item['nama_kelas'],
-                        style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        "$jumlahSiswa Siswa",
-                        style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12),
-                      ),
-                    ],
+                  padding: const EdgeInsets.all(10.0), // 1. Padding dikecilkan dikit (biar lega)
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown, 
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.class_, size: 40, color: Colors.teal),
+                        SizedBox(height: 10),
+                        Text(
+                          item['nama_kelas'],
+                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          "$jumlahSiswa Siswa",
+                          style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
