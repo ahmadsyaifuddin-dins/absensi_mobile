@@ -1,3 +1,4 @@
+import 'package:absensi/app/modules/home/views/admin/hari_libur_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,11 +18,11 @@ class AdminDashboardView extends StatelessWidget {
       backgroundColor: Colors.grey[50],
       body: Stack(
         children: [
-          // Header Background Merah (Beda warna biar Admin kerasa beda)
+          // Header Background Merah
           Container(
             height: 200,
             decoration: BoxDecoration(
-              color: Colors.red[800], // Warna Khas Admin
+              color: Colors.red[800],
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
@@ -78,14 +79,12 @@ class AdminDashboardView extends StatelessWidget {
                       )
                     ],
                   ),
-
-                  SizedBox(height: 40),
+                  SizedBox(height: 70), 
 
                   // --- MENU GRID ---
                   Text("Manajemen Data Master", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
                   SizedBox(height: 15),
                   
-                  // Wrap dengan Center dan constraints agar proporsional
                   Center(
                     child: Wrap(
                       spacing: 15,
@@ -102,17 +101,18 @@ class AdminDashboardView extends StatelessWidget {
                             onTap: () => Get.to(() => ManajemenGuruView()),
                           ),
                         ),
-                        // Bisa tambah menu lain nanti: Data Siswa, Data Kelas, dll.
-                        // SizedBox(
-                        //   width: (MediaQuery.of(context).size.width - 55) / 2,
-                        //   height: 140,
-                        //   child: _buildMenuCard(
-                        //     icon: Icons.school, 
-                        //     label: "Data Kelas", 
-                        //     color: Colors.blue,
-                        //     onTap: () => Get.snackbar("Info", "Fitur Coming Soon"),
-                        //   ),
-                        // ),
+
+                        // (HARI LIBUR)
+                        SizedBox(
+                          width: (MediaQuery.of(context).size.width - 55) / 2,
+                          height: 140,
+                          child: _buildMenuCard(
+                            icon: Icons.event_busy, 
+                            label: "Hari Libur", 
+                            color: Colors.pink,    
+                            onTap: () => Get.to(() => HariLiburView()), 
+                          ),
+                        ),
                       ],
                     ),
                   )

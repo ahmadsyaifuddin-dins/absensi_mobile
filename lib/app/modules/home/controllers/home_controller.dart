@@ -7,21 +7,21 @@ import '../../login/views/login_view.dart';
 
 class HomeController extends GetxController {
   final box = GetStorage();
-  // Variable User biar reactive
   var user = {}.obs;
 
-  var sudahAbsen = false.obs; // Status absen
-  var namaKelas = "-".obs;    // Nama Kelas
-  var jamMasukSekolah = "07:30".obs; // Default
+  var sudahAbsen = false.obs; 
+  var namaKelas = "-".obs;    
+  var jamMasukSekolah = "07:30".obs; 
 
+  var isHoliday = false.obs;     
+  var holidayMessage = "".obs;
+  
   @override
   void onInit() {
     super.onInit();
-    // Load data user local
     if (box.hasData('user')) {
       user.value = box.read('user');
     }
-    // Cek Status Absen & Kelas ke Server
     checkStatusToday();
     getJamMasuk();
   }
@@ -37,7 +37,6 @@ class HomeController extends GetxController {
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body)['data'];
         if (data != null) {
-          // Data dari DB: 07:30:00 -> Kita ambil 5 karakter awal (07:30)
           String jamRaw = data['jam_masuk'];
           jamMasukSekolah.value = jamRaw.length > 5 ? jamRaw.substring(0, 5) : jamRaw;
         }
@@ -67,8 +66,9 @@ class HomeController extends GetxController {
         sudahAbsen.value = data['sudah_absen'];
         namaKelas.value = data['nama_kelas'];
         
-        // (Optional) Update data user lokal kalau mau simpan kelas
-        // tapi pakai variable observable aja udah cukup
+        // --- PARSING STATUS LIBUR DARI BACKEND ---
+        isHoliday.value = data['is_holiday'] ?? false;
+        holidayMessage.value = data['holiday_message'] ?? "";
       }
     } catch (e) {
       print("Error Check Status: $e");
@@ -77,7 +77,7 @@ class HomeController extends GetxController {
 
   void logout() {
     final box = GetStorage();
-    box.erase(); // Hapus semua data
+    box.erase(); 
     Get.offAll(() => LoginView());
   }
 }

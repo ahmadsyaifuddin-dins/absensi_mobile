@@ -155,32 +155,61 @@ class HomeView extends StatelessWidget {
                       crossAxisSpacing: 15,
                       mainAxisSpacing: 15,
                       children: [
-                        // TOMBOL ABSEN MASUK (DENGAN OBX)
+                        // TOMBOL ABSEN MASUK (DENGAN LOGIC LIBUR)
                         Obx(() {
                           bool isDone = controller.sudahAbsen.value;
-                          return _buildMenuCard(
-                            // Kalau sudah absen ganti icon Centang, kalau belum Fingerprint
-                            icon: isDone ? Icons.check_circle : Icons.fingerprint,
-                            // Kalau sudah absen warnanya Hijau, kalau belum Biru
-                            color: isDone ? Colors.green : Colors.blueAccent,
-                            // Ganti Label
-                            label: isDone ? "Sudah Absen" : "Absen Masuk",
-                            onTap: () {
-                              if (isDone) {
-                                // Kalau sudah absen, kasih notif aja
+                          bool isLibur = controller.isHoliday.value; // Ambil status libur
+                          String msgLibur = controller.holidayMessage.value;
+
+                          // 1. LOGIC JIKA HARI INI LIBUR
+                          if (isLibur) {
+                             return _buildMenuCard(
+                              icon: Icons.event_busy, // Icon Kalender Silang
+                              color: Colors.red[800]!, // Warna Merah Gelap
+                              label: "Sekolah Libur", // Label Singkat
+                              onTap: () {
+                                // Tampilkan detail libur saat diklik
+                                Get.snackbar(
+                                  "Info Libur", 
+                                  msgLibur, // Contoh: "Libur Maulid Nabi"
+                                  backgroundColor: Colors.red, 
+                                  colorText: Colors.white,
+                                  icon: Icon(Icons.info, color: Colors.white),
+                                  duration: Duration(seconds: 4)
+                                );
+                              },
+                            );
+                          }
+
+                          // 2. LOGIC JIKA SUDAH ABSEN
+                          if (isDone) {
+                            return _buildMenuCard(
+                              icon: Icons.check_circle,
+                              color: Colors.green,
+                              label: "Sudah Absen",
+                              onTap: () {
                                 Get.snackbar("Info", "Kamu sudah absen hari ini!", 
                                   backgroundColor: Colors.green, colorText: Colors.white);
-                              } else {
-                                // Kalau belum, baru buka halaman absen
+                              },
+                            );
+                          } 
+                          
+                          // 3. LOGIC JIKA BELUM ABSEN (NORMAL)
+                          else {
+                            return _buildMenuCard(
+                              icon: Icons.fingerprint,
+                              color: Colors.blueAccent,
+                              label: "Absen Masuk",
+                              onTap: () {
                                 final box = GetStorage();
                                 String? token = box.read('token');
                                 if (token != null) {
                                   Get.to(() => AbsensiView(tokenUser: token))
-                                     ?.then((_) => controller.checkStatusToday()); // Refresh pas balik
+                                    ?.then((_) => controller.checkStatusToday()); 
                                 }
-                              }
-                            },
-                          );
+                              },
+                            );
+                          }
                         }),
 
                         _buildMenuCard(
