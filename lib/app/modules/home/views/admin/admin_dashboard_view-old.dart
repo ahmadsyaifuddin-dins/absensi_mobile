@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../../login/views/login_view.dart';
 import '../../controllers/admin_controller.dart';
-import 'manajemen_guru_view.dart';
+import 'manajemen_guru_view.dart'; // Kita buat setelah ini
 import '../../../../data/providers/api_config.dart';
 
 class AdminDashboardView extends StatelessWidget {
@@ -85,36 +85,27 @@ class AdminDashboardView extends StatelessWidget {
                   Text("Manajemen Data Master", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
                   SizedBox(height: 15),
                   
-                  // Wrap dengan Center dan constraints agar proporsional
-                  Center(
-                    child: Wrap(
-                      spacing: 15,
-                      runSpacing: 15,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: (MediaQuery.of(context).size.width - 55) / 2,
-                          height: 140,
-                          child: _buildMenuCard(
-                            icon: Icons.supervisor_account, 
-                            label: "Data Guru", 
-                            color: Colors.orange,
-                            onTap: () => Get.to(() => ManajemenGuruView()),
-                          ),
-                        ),
-                        // Bisa tambah menu lain nanti: Data Siswa, Data Kelas, dll.
-                        // SizedBox(
-                        //   width: (MediaQuery.of(context).size.width - 55) / 2,
-                        //   height: 140,
-                        //   child: _buildMenuCard(
-                        //     icon: Icons.school, 
-                        //     label: "Data Kelas", 
-                        //     color: Colors.blue,
-                        //     onTap: () => Get.snackbar("Info", "Fitur Coming Soon"),
-                        //   ),
-                        // ),
-                      ],
-                    ),
+                  GridView.count(
+                    shrinkWrap: true,
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                    childAspectRatio: 1.3,
+                    children: [
+                      _buildMenuCard(
+                        icon: Icons.supervisor_account, 
+                        label: "Data Guru", 
+                        color: Colors.orange,
+                        onTap: () => Get.to(() => ManajemenGuruView()),
+                      ),
+                      // Bisa tambah menu lain nanti: Data Siswa, Data Kelas, dll.
+                      _buildMenuCard(
+                        icon: Icons.school, 
+                        label: "Data Kelas", 
+                        color: Colors.blue,
+                        onTap: () => Get.snackbar("Info", "Fitur Coming Soon"),
+                      ),
+                    ],
                   )
                 ],
               ),
