@@ -272,7 +272,6 @@ class LaporanController extends GetxController {
           '&tahun=${selectedYear.value}'
           '&kategori=${selectedKategoriIzin.value}'; // Filter kategori
 
-      // --- PERBAIKAN: HAPUS LOGIC INI AGAR TIDAK ADA GHOST FILTER ---
       // Karena di View Rekap Izin tidak ada dropdown kelas, 
       // jangan kirim kelas_id yang tersimpan dari menu lain.
       

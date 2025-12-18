@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart'; // Jangan lupa ini
 import '../../controllers/laporan_controller.dart';
 import '../detail_foto_view.dart';
 import '../../../../data/providers/api_config.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
 class LaporanRekapIzinView extends StatelessWidget {
   final controller = Get.put(LaporanController());
@@ -13,6 +13,7 @@ class LaporanRekapIzinView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     initializeDateFormatting('id_ID', null);
+    
     // Panggil fetch saat pertama dibuka
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.fetchRekapIzin();
@@ -137,8 +138,9 @@ class LaporanRekapIzinView extends StatelessWidget {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // DISINI KITA PANGGIL HELPER BARU
                           Text(
-                            "${kelas['nama_kelas']} • ${_formatDate(item['tanggal'])}", // Gunakan fungsi helper
+                            "${kelas['nama_kelas']} • ${_formatDate(item['tanggal'])}", 
                              style: TextStyle(color: Colors.black87)
                           ),
                           SizedBox(height: 5),
@@ -163,17 +165,31 @@ class LaporanRekapIzinView extends StatelessWidget {
       ),
     );
   }
-  // Helper biar tanggal gak geser karena Timezone
-  String _formatDate(String dateString) {
+
+  // Helper Format Tanggal (Clean Version)
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return "-";
+    
     try {
-      // SOLUSI: Ambil 10 karakter pertama saja (YYYY-MM-DD)
-      // Ini akan membuang informasi jam & timezone (T00:00:00Z) yang bikin tanggal mundur
-      String dateOnly = dateString.length >= 10 ? dateString.substring(0, 10) : dateString;
+      // 1. Ambil 10 karakter pertama (YYYY-MM-DD)
+      String rawDate = dateStr.length >= 10 ? dateStr.substring(0, 10) : dateStr;
+
+      // 2. Pecah & Rakit Manual (Safety agar tidak terpengaruh jam/timezone)
+      List<String> parts = rawDate.split('-');
+      if (parts.length == 3) {
+        DateTime dt = DateTime(
+          int.parse(parts[0]), // Tahun
+          int.parse(parts[1]), // Bulan
+          int.parse(parts[2])  // Hari
+        );
+        return DateFormat('d MMMM yyyy', 'id_ID').format(dt);
+      }
       
-      DateTime dt = DateTime.parse(dateOnly);
-      return DateFormat('d MMMM yyyy', 'id_ID').format(dt);
+      // Fallback jika format tidak standar
+      return DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.parse(dateStr));
+      
     } catch (e) {
-      return dateString;
+      return dateStr; // Jika error parsing, kembalikan string aslinya
     }
   }
 }
