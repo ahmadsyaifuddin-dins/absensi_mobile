@@ -90,7 +90,7 @@ class LoginView extends StatelessWidget {
               
               SizedBox(height: 20),
               Text(
-                "Lupa password? Hubungi Admin Sekolah",
+                "Lupa password? Hubungi Guru ya!",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),

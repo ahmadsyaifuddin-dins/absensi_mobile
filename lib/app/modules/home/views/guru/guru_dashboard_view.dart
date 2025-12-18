@@ -1,5 +1,5 @@
 import 'package:absensi/app/modules/home/views/guru/data_siswa_view.dart';
-import 'package:absensi/app/modules/home/views/guru/laporan_harian_view.dart';
+import 'package:absensi/app/modules/home/views/guru/detail_status_view.dart';
 import 'package:absensi/app/modules/home/views/guru/menu_laporan_view.dart';
 import 'package:absensi/app/modules/home/views/guru/pengaturan_sekolah_view.dart';
 import 'package:absensi/app/modules/home/views/guru/rekap_kelas_view.dart';
@@ -224,28 +224,69 @@ class GuruDashboardView extends StatelessWidget {
 
   // --- WIDGET HELPER ---
   Widget _buildSummaryCard(String label, String count, Color color) {
+    String statusParam = 'hadir';
+    if (label.contains('Sakit')) statusParam = 'sakit'; // Default ke sakit dulu, nanti filter API bisa disesuaikan kalau mau gabung
+    // TAPI karena di UI kamu Sakit/Izin digabung, logic klik-nya agak tricky.
+    // Opsi terbaik: Kita pecah tombolnya, atau saat diklik muncul Pilihan (Dialog) mau lihat Sakit atau Izin.
+    
+    // LOGIC KHUSUS BUTTON SAKIT/IZIN
+    bool isGabungan = label.contains('Sakit') || label.contains('Izin');
+    bool isBelum = label.contains('Belum');
+    
     return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-          color: Colors.white,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            if (isBelum) {
+              Get.to(() => DetailStatusView(title: "Siswa Belum Absen", status: "belum", themeColor: Colors.red));
+            } else if (label == "Hadir") {
+              Get.to(() => DetailStatusView(title: "Siswa Hadir", status: "hadir", themeColor: Colors.green));
+            } else if (isGabungan) {
+               // Karena Sakit & Izin digabung di satu kotak, kita kasih pilihan saat diklik
+               Get.defaultDialog(
+                 title: "Lihat Detail",
+                 content: Column(
+                   children: [
+                     ListTile(
+                       leading: Icon(Icons.sick, color: Colors.orange),
+                       title: Text("Siswa Sakit"),
+                       onTap: () { Get.back(); Get.to(() => DetailStatusView(title: "Siswa Sakit", status: "sakit", themeColor: Colors.orange)); },
+                     ),
+                     ListTile(
+                       leading: Icon(Icons.mail, color: Colors.blue),
+                       title: Text("Siswa Izin"),
+                       onTap: () { Get.back(); Get.to(() => DetailStatusView(title: "Siswa Izin", status: "izin", themeColor: Colors.blue)); },
+                     ),
+                   ],
+                 )
+               );
+            }
+          },
           borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: [
-            Text(
-              count,
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 15),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
             ),
-            Text(
-              label,
-              style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+            child: Column(
+              children: [
+                Text(
+                  count,
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
