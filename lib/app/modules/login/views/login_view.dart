@@ -18,12 +18,22 @@ class LoginView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. LOGO / ICON
-              Icon(Icons.school_rounded, size: 80, color: Colors.blueAccent),
+              //  (GANTI ICON JADI IMAGE)
+              // Icon(Icons.school_rounded, size: 80, color: Colors.blueAccent),
+              
+              // Menampilkan Logo Sekolah
+              Container(
+                height: 120, // Atur tinggi logo sesuai kebutuhan
+                child: Image.asset(
+                  'assets/images/logo.png', 
+                  fit: BoxFit.contain, // Agar gambar tidak terpotong
+                ),
+              ),
+
               SizedBox(height: 16),
               
               Obx(() => Text(
-                controller.namaSekolah.value.toUpperCase(), // Biar Kapital Semua
+                controller.namaSekolah.value.toUpperCase(), 
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                     fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue[900]),
