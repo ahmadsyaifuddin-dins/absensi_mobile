@@ -31,6 +31,7 @@ class LaporanController extends GetxController {
 
   var listRekapIzin = [].obs;
   var selectedKategoriIzin = 'Semua'.obs; // Opsi: Semua, Sakit, Izin
+  var hasSearched = false.obs;
 
   @override
   void onInit() {
@@ -40,20 +41,24 @@ class LaporanController extends GetxController {
 
   // 0. FETCH DATA KELAS (DROPDOWN)
   Future<void> fetchKelas() async {
-    try {
-      final box = GetStorage();
-      var response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/data-kelas'), 
-        headers: {'Authorization': 'Bearer ${box.read('token')}'}
-      );
-      if (response.statusCode == 200) {
-        listKelas.value = jsonDecode(response.body)['data'];
+  try {
+    final box = GetStorage();
+    var response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/data-kelas'), 
+      headers: {'Authorization': 'Bearer ${box.read('token')}'}
+    );
+    if (response.statusCode == 200) {
+      listKelas.value = jsonDecode(response.body)['data'];
+      
+      // Auto-select kelas pertama jika ada
+      if (listKelas.isNotEmpty) {
+        selectedKelasId.value = listKelas[0]['id'].toString();
         
-        // Auto-select kelas pertama jika ada
-        if (listKelas.isNotEmpty) {
-          selectedKelasId.value = listKelas[0]['id'].toString();
-        }
+        // Panggil fungsi ini agar daftar siswa langsung terisi otomatis
+        // berdasarkan kelas pertama yang terpilih.
+        fetchSiswaByKelas(); 
       }
+    }
     } catch (e) {
       print("Err Kelas: $e");
     }
@@ -204,9 +209,14 @@ class LaporanController extends GetxController {
 
   // --- 7. FETCH DETAIL SISWA (Untuk Report No. 3) ---
   Future<void> fetchLaporanSiswa() async {
-    if (selectedSiswaId.value.isEmpty) return;
+    if (selectedSiswaId.value.isEmpty) {
+        Get.snackbar("Error", "Pilih siswa terlebih dahulu");
+        return;
+    }
     
     isLoading.value = true;
+    hasSearched.value = true;
+    
     try {
       final box = GetStorage();
       var response = await http.get(

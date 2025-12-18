@@ -115,9 +115,45 @@ class LaporanSiswaView extends StatelessWidget {
           // --- LIST DATA ---
           Expanded(
             child: Obx(() {
-              if (controller.isLoading.value) return Center(child: CircularProgressIndicator());
-              if (controller.listDetailSiswa.isEmpty) return Center(child: Text("Silakan pilih siswa dan klik Lihat Data"));
+              // KONDISI 1: Loading
+              if (controller.isLoading.value) {
+                return Center(child: CircularProgressIndicator());
+              }
 
+              // KONDISI 2: Belum pernah klik tombol (State Awal)
+              if (!controller.hasSearched.value) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.touch_app, size: 60, color: Colors.grey[300]),
+                      SizedBox(height: 10),
+                      Text(
+                        "Silakan pilih siswa & klik LIHAT DATA",
+                        style: GoogleFonts.poppins(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // KONDISI 3: Sudah klik tombol, tapi datanya kosong (0)
+              if (controller.listDetailSiswa.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.folder_off, size: 60, color: Colors.grey[300]),
+                      SizedBox(height: 10),
+                      Text(
+                        "Belum ada riwayat absensi untuk siswa ini.",
+                        style: GoogleFonts.poppins(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              
               return ListView.separated(
                 itemCount: controller.listDetailSiswa.length,
                 separatorBuilder: (c, i) => Divider(),
