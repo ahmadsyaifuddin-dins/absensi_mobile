@@ -1,5 +1,8 @@
+import 'package:absensi/app/modules/home/views/guru/laporan_jarak_view.dart';
 import 'package:absensi/app/modules/home/views/guru/laporan_rekap_izin_view.dart';
 import 'package:absensi/app/modules/home/views/guru/laporan_telat_view.dart';
+import 'package:absensi/app/modules/home/views/guru/laporan_redflag_view.dart';
+import 'package:absensi/app/modules/home/views/guru/laporan_persentase_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -77,6 +80,42 @@ class MenuLaporanView extends StatelessWidget {
             onTap: () {
               Get.to(() => LaporanTelatView());
               // Get.snackbar("Info", "Fitur ini akan segera hadir!");
+            },
+          ),
+
+          // 6. LAPORAN JARAK LOKASI ABSENSI (IDE A)
+          _buildMenuItem(
+            title: "Jarak & Lokasi Absen",
+            subtitle: "Deteksi jarak absen siswa dari sekolah (GPS)",
+            icon: Icons.radar,
+            color: Colors.deepPurple,
+            onTap: () {
+              // BUKA VIEW YANG BARU DIBUAT
+              Get.to(() => LaporanJarakView());
+            },
+          ),
+
+          // 7. LAPORAN RED FLAG / SISWA BERMASALAH (IDE B)
+          _buildMenuItem(
+            title: "Siswa Bermasalah (Red Flag)",
+            subtitle: "Daftar siswa banyak Alpa/Sakit/Telat",
+            icon: Icons.warning_amber_rounded,
+            color: Colors.red,
+            onTap: () {
+              // ARAHKAN KE VIEW YANG BARU KITA BUAT
+              Get.to(() => LaporanRedflagView());
+            },
+          ),
+
+         // 8. LAPORAN PERSENTASE KELAS (IDE C)
+          _buildMenuItem(
+            title: "Ranking Kehadiran Kelas",
+            subtitle: "Perbandingan grafik kehadiran antar kelas",
+            icon: Icons.bar_chart,
+            color: Colors.blueGrey,
+            onTap: () {
+              // ARAHKAN KE VIEW YANG BARU DIBUAT
+              Get.to(() => LaporanPersentaseView());
             },
           ),
         ],

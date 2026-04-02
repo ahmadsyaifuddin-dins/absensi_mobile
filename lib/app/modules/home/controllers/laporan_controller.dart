@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Wajib untuk format tanggal
 import '../../../data/providers/api_config.dart';
 
 // Import Services Baru
@@ -18,12 +19,13 @@ class LaporanController extends GetxController {
   var listSiswaDropdown = [].obs;
   var listDetailSiswa = [].obs;
   var listRekapIzin = [].obs;
-
+  
   // --- FILTER VARIABLES ---
   var selectedMonth = DateTime.now().month.obs;
   var selectedYear = DateTime.now().year.obs;
   var selectedDate = DateTime.now().obs;
-  
+  var selectedDateJarak = DateTime.now().obs; // Tambahan untuk GPS
+
   var selectedKelasId = "".obs;
   var selectedSiswaId = "".obs;
   var selectedKategoriIzin = 'Semua'.obs;
@@ -183,7 +185,7 @@ class LaporanController extends GetxController {
     DownloadService.downloadPdf('${ApiConfig.baseUrl}/laporan/siswa/export', {
       'user_id': selectedSiswaId.value,
       'bulan': selectedMonth.value.toString(),
-      'tahun': selectedYear.value.toString(), // Biasanya laporan siswa butuh filter waktu juga? Kalau tidak, hapus saja params bulan/tahun
+      'tahun': selectedYear.value.toString(),
     });
   }
 
@@ -199,6 +201,79 @@ class LaporanController extends GetxController {
       'bulan': selectedMonth.value.toString(),
       'tahun': selectedYear.value.toString(),
       'kategori': selectedKategoriIzin.value,
+    });
+  }
+
+  // =========================================================
+  // LOGIC LAPORAN JARAK (GPS)
+  // =========================================================
+
+  Future<void> chooseDateJarak(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDateJarak.value,
+      firstDate: DateTime(2024), 
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.deepPurple, 
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      selectedDateJarak.value = picked;
+    }
+  }
+
+  void downloadPdfJarak() {
+    if (selectedKelasId.value.isEmpty) {
+      Get.snackbar(
+        "Peringatan", 
+        "Silakan pilih kelas terlebih dahulu!",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    // Format tanggal jadi YYYY-MM-DD
+    String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDateJarak.value);
+    
+    // Pakai DownloadService bawaan aplikasimu! Lebih rapi.
+    DownloadService.downloadPdf('${ApiConfig.baseUrl}/laporan/jarak/export', {
+      'kelas_id': selectedKelasId.value,
+      'tanggal': formattedDate,
+    });
+  }
+
+  // =========================================================
+  // LOGIC LAPORAN RED FLAG (SISWA BERMASALAH)
+  // =========================================================
+
+  void downloadPdfRedFlag() {
+    // Kita tinggal lempar bulan dan tahun ke route backend yang baru kita buat
+    DownloadService.downloadPdf('${ApiConfig.baseUrl}/laporan/redflag/export', {
+      'bulan': selectedMonth.value.toString(),
+      'tahun': selectedYear.value.toString(),
+    });
+  }
+
+  // =========================================================
+  // LOGIC LAPORAN PERSENTASE KEHADIRAN KELAS
+  // =========================================================
+
+  void downloadPdfPersentase() {
+    DownloadService.downloadPdf('${ApiConfig.baseUrl}/laporan/persentase/export', {
+      'bulan': selectedMonth.value.toString(),
+      'tahun': selectedYear.value.toString(),
     });
   }
 }
