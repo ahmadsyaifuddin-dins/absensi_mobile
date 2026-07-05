@@ -11,8 +11,9 @@ import 'validasi_izin_view.dart';
 import '../profile_view.dart';
 import 'data_siswa_view.dart';
 import 'detail_status_view.dart';
-import 'rekap_kelas_view.dart';
 import '../../../../data/providers/api_config.dart';
+import 'kelas_saya_view.dart';
+import 'input_presensi_matpel_view.dart';
 
 class GuruDashboardView extends StatelessWidget {
 
@@ -172,24 +173,25 @@ class GuruDashboardView extends StatelessWidget {
                         },
                       ),
                      
-                      // 2. Presensi Kelas Matpel [BARU]
+                      // 2. Presensi Kelas Matpel
                       _buildMenuButton(
-                        Icons.co_present, 
+                        Icons.co_present,
                         "Presensi Kelas",
                         Colors.blue,
                         () {
-                           // Nanti kita buatkan View khusus untuk Guru memulai sesi absen kelas
-                           Get.to(() => RiwayatMatpelView());
+                           // Arahkan ke Form Input
+                           Get.to(() => InputPresensiMatpelView());
                         },
                       ),
 
                       // 3. Rekap Kelas
                       _buildMenuButton(
                         Icons.meeting_room,
-                        "Rekap Kelas Saya",
+                        "Kelas Binaan Saya",
                         Colors.teal,
                         () {
-                           Get.to(() => RekapKelasView());
+                           // Arahkan ke View Read-Only
+                           Get.to(() => KelasSayaView());
                         },
                       ),
 

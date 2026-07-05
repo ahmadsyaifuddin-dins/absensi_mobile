@@ -1,23 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get_storage/get_storage.dart';
 import '../../controllers/siswa_controller.dart';
 import '../../../../data/providers/api_config.dart';
 
 class DataSiswaView extends StatelessWidget {
+  // [BARU] Tambahkan parameter opsional kelasId
+  final String? kelasId; 
+  DataSiswaView({this.kelasId});
+
   final controller = Get.put(SiswaController());
 
   @override
   Widget build(BuildContext context) {
+    // --- [BARU] LOGIC CEK HAK AKSES ---
+    final box = GetStorage();
+    var user = box.read('user') ?? {};
+    String role = user['role'] ?? 'guru';
+    // Yang boleh nambah/edit/hapus cuma admin atau TU
+    bool isAdmin = role == 'admin' || role == 'TU'; 
+
+    // --- [BARU] OTOMATIS FETCH DATA BERDASARKAN FILTER KELAS ---
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.fetchSiswa(kelasId: kelasId);
+    });
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Data Siswa", style: GoogleFonts.poppins()),
+        // Judul dinamis menyesuaikan asal halaman
+        title: Text(kelasId != null ? "Daftar Anak Didik" : "Data Semua Siswa", style: GoogleFonts.poppins()),
         backgroundColor: Colors.purple,
         foregroundColor: Colors.white,
       ),
       body: Obx(() {
-        if (controller.isLoading.value) return Center(child: CircularProgressIndicator());
-        if (controller.listSiswa.isEmpty) return Center(child: Text("Belum ada data siswa."));
+        if (controller.isLoading.value) return Center(child: CircularProgressIndicator(color: Colors.purple));
+        if (controller.listSiswa.isEmpty) return Center(child: Text("Belum ada data siswa.", style: GoogleFonts.poppins(color: Colors.grey)));
 
         return ListView.builder(
           padding: EdgeInsets.all(10),
@@ -34,48 +52,56 @@ class DataSiswaView extends StatelessWidget {
                   backgroundColor: Colors.purple[100],
                   radius: 25,
                   // Tampilkan Foto jika ada
-                  backgroundImage: item['foto_profil'] != null 
+                  backgroundImage: item['foto_profil'] != null
                       ? NetworkImage("${ApiConfig.imageUrl}${item['foto_profil']}") as ImageProvider
                       : null,
                   // Tampilkan Inisial jika foto kosong
-                  child: item['foto_profil'] == null 
+                  child: item['foto_profil'] == null
                       ? Text(
-                          item['nama'][0].toUpperCase(), 
+                          item['nama'][0].toUpperCase(),
                           style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)
                         )
                       : null,
                 ),
                 title: Text(item['nama'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
                 subtitle: Text("$kelas | NISN: ${item['nisn_nip']}", style: GoogleFonts.poppins(fontSize: 12)),
-                trailing: PopupMenuButton(
-                  onSelected: (value) {
-                    if (value == 'edit') _showForm(context, item);
-                    if (value == 'delete') _confirmDelete(item['id']);
-                  },
-                  itemBuilder: (ctx) => [
-                    PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 18, color: Colors.blue), SizedBox(width: 8), Text("Edit")])),
-                    PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, size: 18, color: Colors.red), SizedBox(width: 8), Text("Hapus")])),
-                  ],
-                ),
+                
+                // --- [BARU] SEMBUNYIKAN MENU EDIT & HAPUS JIKA BUKAN ADMIN/TU ---
+                trailing: isAdmin 
+                  ? PopupMenuButton(
+                      onSelected: (value) {
+                        if (value == 'edit') _showForm(context, item);
+                        if (value == 'delete') _confirmDelete(item['id']);
+                      },
+                      itemBuilder: (ctx) => [
+                        PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 18, color: Colors.blue), SizedBox(width: 8), Text("Edit", style: GoogleFonts.poppins())])),
+                        PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, size: 18, color: Colors.red), SizedBox(width: 8), Text("Hapus", style: GoogleFonts.poppins())])),
+                      ],
+                    )
+                  : null, // Jika guru, trailing kosong (tidak ada menu titik tiga)
               ),
             );
           },
         );
       }),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.purple,
-        child: Icon(Icons.add, color: Colors.white),
-        onPressed: () => _showForm(context, null),
-      ),
+      // --- [BARU] SEMBUNYIKAN TOMBOL TAMBAH (+) JIKA BUKAN ADMIN/TU ---
+      floatingActionButton: isAdmin 
+        ? FloatingActionButton(
+            backgroundColor: Colors.purple,
+            child: Icon(Icons.add, color: Colors.white),
+            onPressed: () => _showForm(context, null),
+          )
+        : null, 
     );
   }
 
+  // --- FUNGSI FORM (TETAP UTUH SEPERTI ASLINYA KARENA CUMA ADMIN YANG BISA AKSES) ---
   void _showForm(BuildContext context, Map? item) {
     if (item != null) {
       controller.namaC.text = item['nama'];
       controller.nisnC.text = item['nisn_nip'];
       controller.passC.clear();
-      controller.noHpOrtuC.text = item['no_hp_ortu'] ?? ''; 
+      controller.noHpOrtuC.text = item['no_hp_ortu'] ?? '';
       controller.selectedKelasId.value = item['kelas_id'] != null ? item['kelas_id'].toString() : "";
     } else {
       controller.clearForm();
@@ -89,10 +115,10 @@ class DataSiswaView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(item == null ? "Tambah Siswa" : "Edit Siswa", 
+              Text(item == null ? "Tambah Siswa" : "Edit Siswa",
                    style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 20),
-              
+             
               TextField(
                 controller: controller.namaC,
                 decoration: InputDecoration(labelText: "Nama Lengkap", border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
@@ -105,22 +131,21 @@ class DataSiswaView extends StatelessWidget {
               ),
               SizedBox(height: 10),
 
-              // --- [BARU] TEXTFIELD NO HP ORTU ---
               TextField(
                 controller: controller.noHpOrtuC,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
-                  labelText: "Nomor WhatsApp Orang Tua", 
+                  labelText: "Nomor WhatsApp Orang Tua",
                   hintText: "Contoh: 081234567890",
                   prefixIcon: Icon(Icons.phone, color: Colors.green),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))
                 ),
               ),
               SizedBox(height: 10),
-              
+             
               Obx(() => DropdownButtonFormField<String>(
                 value: controller.selectedKelasId.value.isEmpty ? null : controller.selectedKelasId.value,
-                hint: Text("Pilih Kelas"),
+                hint: Text("Pilih Kelas", style: GoogleFonts.poppins()),
                 decoration: InputDecoration(
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
@@ -128,7 +153,7 @@ class DataSiswaView extends StatelessWidget {
                 items: controller.listKelas.map<DropdownMenuItem<String>>((kelas) {
                   return DropdownMenuItem<String>(
                     value: kelas['id'].toString(),
-                    child: Text(kelas['nama_kelas']),
+                    child: Text(kelas['nama_kelas'], style: GoogleFonts.poppins()),
                   );
                 }).toList(),
                 onChanged: (val) => controller.selectedKelasId.value = val!,
@@ -139,19 +164,19 @@ class DataSiswaView extends StatelessWidget {
                 controller: controller.passC,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: "Password " + (item == null ? "(Default: 123456)" : "(Isi jika ingin ubah)"), 
+                  labelText: "Password " + (item == null ? "(Default: 123456)" : "(Isi jika ingin ubah)"),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))
                 ),
               ),
-              
+             
               SizedBox(height: 20),
               SizedBox(
-                width: double.infinity, 
+                width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () => controller.simpanSiswa(id: item != null ? item['id'].toString() : null),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
-                  child: Text("SIMPAN"),
+                  child: Text("SIMPAN", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
                 ),
               ),
               SizedBox(height: MediaQuery.of(context).viewInsets.bottom)
@@ -166,7 +191,9 @@ class DataSiswaView extends StatelessWidget {
   void _confirmDelete(int id) {
     Get.defaultDialog(
       title: "Hapus Siswa",
+      titleStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold),
       middleText: "Yakin ingin menghapus data siswa ini?",
+      middleTextStyle: GoogleFonts.poppins(),
       textConfirm: "Hapus",
       textCancel: "Batal",
       confirmTextColor: Colors.white,

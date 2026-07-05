@@ -14,9 +14,9 @@ class RekapKelasView extends StatelessWidget {
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
       ),
-      backgroundColor: Colors.grey[100], // Biar background gak terlalu putih kaku
+      backgroundColor: Colors.grey[100], 
       body: Obx(() {
-        if (controller.isLoading.value) return Center(child: CircularProgressIndicator());
+        if (controller.isLoading.value && controller.listKelas.isEmpty) return Center(child: CircularProgressIndicator());
        
         if (controller.listKelas.isEmpty) {
           return Center(child: Text("Belum ada data kelas", style: GoogleFonts.poppins(color: Colors.grey)));
@@ -28,14 +28,16 @@ class RekapKelasView extends StatelessWidget {
             crossAxisCount: 2, 
             crossAxisSpacing: 15,
             mainAxisSpacing: 15,
-            childAspectRatio: 1.1, // Disesuaikan sedikit biar badge-nya muat
+            childAspectRatio: 0.95, // Lebarin dikit ke bawah biar nama wali kelas muat
           ),
           itemCount: controller.listKelas.length,
           itemBuilder: (context, index) {
             var item = controller.listKelas[index];
             var jumlahSiswa = item['siswa_count'] ?? 0;
             
-            // --- LOGIC STATUS APPROVAL ---
+            // [BARU] Ambil nama wali kelas dari relasi Laravel
+            String namaWali = item['wali_kelas'] != null ? item['wali_kelas']['nama'] : 'Belum Ada Wali';
+            
             String status = item['status_approval'] ?? 'pending';
             bool isApproved = status == 'approved';
 
@@ -53,33 +55,35 @@ class RekapKelasView extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.class_, 
-                          size: 40, 
-                          color: isApproved ? Colors.teal : Colors.orange // Warna icon ngikutin status
-                        ),
-                        SizedBox(height: 10),
+                        Icon(Icons.class_, size: 40, color: isApproved ? Colors.teal : Colors.orange),
+                        SizedBox(height: 5),
                         Text(
                           item['nama_kelas'],
                           style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
+                        SizedBox(height: 2),
+                        
+                        // [BARU] Teks Wali Kelas
+                        Text(
+                          namaWali,
+                          style: GoogleFonts.poppins(color: Colors.blueGrey, fontSize: 10, fontWeight: FontWeight.w600),
+                          textAlign: TextAlign.center,
+                        ),
                         SizedBox(height: 5),
+                        
                         Text(
                           "$jumlahSiswa Siswa",
                           style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12),
                         ),
                         SizedBox(height: 8),
                         
-                        // --- BADGE STATUS APPROVAL ---
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: isApproved ? Colors.green[50] : Colors.orange[50],
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: isApproved ? Colors.green[300]! : Colors.orange[300]!,
-                            )
+                            border: Border.all(color: isApproved ? Colors.green[300]! : Colors.orange[300]!)
                           ),
                           child: Text(
                             isApproved ? "Disahkan" : "Menunggu",
@@ -111,21 +115,50 @@ class RekapKelasView extends StatelessWidget {
   void _showDialog(BuildContext context, Map? item) {
     if (item != null) {
       controller.namaKelasC.text = item['nama_kelas'];
+      // Set dropdown dengan data lama jika ada
+      controller.selectedWaliKelasId.value = item['wali_kelas_id'] != null ? item['wali_kelas_id'].toString() : "";
     } else {
       controller.namaKelasC.clear();
+      controller.selectedWaliKelasId.value = "";
     }
 
     Get.defaultDialog(
       title: item == null ? "Tambah Kelas" : "Edit Kelas",
       titleStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold),
       content: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: TextField(
-          controller: controller.namaKelasC,
-          decoration: InputDecoration(
-            labelText: "Nama Kelas (Contoh: XII RPL 1)",
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
+        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller.namaKelasC,
+              decoration: InputDecoration(
+                labelText: "Nama Kelas",
+                hintText: "Contoh: XII RPL 1",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            SizedBox(height: 15),
+            
+            // [BARU] DROPDOWN WALI KELAS
+            Obx(() => DropdownButtonFormField<String>(
+              value: controller.selectedWaliKelasId.value.isEmpty ? null : controller.selectedWaliKelasId.value,
+              hint: Text("Pilih Wali Kelas (Opsional)", style: GoogleFonts.poppins(fontSize: 12)),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+              ),
+              items: controller.listGuru.map<DropdownMenuItem<String>>((guru) {
+                return DropdownMenuItem<String>(
+                  value: guru['id'].toString(),
+                  child: Text(guru['nama'], style: GoogleFonts.poppins(fontSize: 13)),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if(val != null) controller.selectedWaliKelasId.value = val;
+              },
+            )),
+          ],
         ),
       ),
       textConfirm: "SIMPAN",

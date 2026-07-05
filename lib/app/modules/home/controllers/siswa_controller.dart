@@ -26,12 +26,19 @@ class SiswaController extends GetxController {
   }
 
   // 1. AMBIL DATA SISWA
-  Future<void> fetchSiswa() async {
+  Future<void> fetchSiswa({String? kelasId}) async {
     isLoading.value = true;
     try {
       final box = GetStorage();
+      
+      // Bikin URL dinamis
+      String url = '${ApiConfig.baseUrl}/siswa';
+      if (kelasId != null && kelasId.isNotEmpty) {
+        url += '?kelas_id=$kelasId'; // Kirim filter ke Laravel
+      }
+
       var response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/siswa'),
+        Uri.parse(url),
         headers: {'Authorization': 'Bearer ${box.read('token')}'}
       );
       if (response.statusCode == 200) {
