@@ -1,4 +1,5 @@
 import 'package:absensi/app/modules/home/views/profile_view.dart';
+import 'package:absensi/app/modules/home/views/siswa/absensi_matpel_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -227,6 +228,16 @@ class HomeView extends StatelessWidget {
                           label: "Izin / Sakit",
                           onTap: () {
                             Get.to(() => IzinView());
+                          },
+                        ),
+
+                        _buildMenuCard(
+                          icon: Icons.school, // Icon untuk kelas
+                          color: Colors.blueAccent,
+                          label: "Presensi Kelas",
+                          onTap: () {
+                            // Arahkan ke View yang sudah kita buat tadi
+                            Get.to(() => AbsensiMatpelView());
                           },
                         ),
 

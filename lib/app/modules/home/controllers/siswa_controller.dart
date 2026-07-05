@@ -14,7 +14,9 @@ class SiswaController extends GetxController {
   TextEditingController namaC = TextEditingController();
   TextEditingController nisnC = TextEditingController();
   TextEditingController passC = TextEditingController();
-  var selectedKelasId = "".obs; // Menyimpan ID Kelas yang dipilih
+  TextEditingController noHpOrtuC = TextEditingController(); // [BARU]
+  
+  var selectedKelasId = "".obs; 
 
   @override
   void onInit() {
@@ -60,9 +62,8 @@ class SiswaController extends GetxController {
 
   // 3. SIMPAN SISWA (CREATE / UPDATE)
   Future<void> simpanSiswa({String? id}) async {
-    // Validasi sederhana
     if (namaC.text.isEmpty || nisnC.text.isEmpty || selectedKelasId.value.isEmpty) {
-      Get.snackbar("Error", "Nama, NISN, dan Kelas wajib diisi!", 
+      Get.snackbar("Error", "Nama, NISN, dan Kelas wajib diisi!",
         backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
@@ -70,16 +71,16 @@ class SiswaController extends GetxController {
     isLoading.value = true;
     try {
       final box = GetStorage();
-      // Tentukan URL: Kalau ID null berarti CREATE, kalau ada berarti UPDATE
-      String url = id == null 
-          ? '${ApiConfig.baseUrl}/siswa' 
+      String url = id == null
+          ? '${ApiConfig.baseUrl}/siswa'
           : '${ApiConfig.baseUrl}/siswa/update/$id';
 
       var body = {
         'nama': namaC.text,
         'nisn_nip': nisnC.text,
         'kelas_id': selectedKelasId.value,
-        'password': passC.text, // Password opsional saat edit
+        'password': passC.text, 
+        'no_hp_ortu': noHpOrtuC.text, // [BARU] Kirim ke Laravel
       };
 
       var response = await http.post(
@@ -89,13 +90,13 @@ class SiswaController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        Get.back(); // Tutup Form Dialog
-        Get.snackbar("Sukses", "Data siswa berhasil disimpan", 
+        Get.back(); 
+        Get.snackbar("Sukses", "Data siswa berhasil disimpan",
           backgroundColor: Colors.green, colorText: Colors.white);
-        fetchSiswa(); // Refresh List Siswa
+        fetchSiswa(); 
         clearForm();
       } else {
-        Get.snackbar("Gagal", "Mungkin NISN sudah terpakai", 
+        Get.snackbar("Gagal", "Mungkin NISN sudah terpakai",
           backgroundColor: Colors.orange, colorText: Colors.white);
       }
     } catch (e) {
@@ -126,6 +127,7 @@ class SiswaController extends GetxController {
     namaC.clear();
     nisnC.clear();
     passC.clear();
+    noHpOrtuC.clear();
     selectedKelasId.value = "";
   }
 }

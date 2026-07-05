@@ -14,6 +14,9 @@ class AdminController extends GetxController {
   final nipC = TextEditingController();
   final emailC = TextEditingController();
   final passC = TextEditingController();
+  
+  // State untuk Role
+  var selectedRole = 'guru'.obs;
 
   @override
   void onInit() {
@@ -21,7 +24,7 @@ class AdminController extends GetxController {
     fetchGuru();
   }
 
-  // 1. FETCH DATA GURU
+  // 1. FETCH DATA GURU & PEGAWAI
   Future<void> fetchGuru() async {
     isLoading.value = true;
     try {
@@ -35,16 +38,16 @@ class AdminController extends GetxController {
         var json = jsonDecode(response.body);
         listGuru.value = json['data'];
       } else {
-        Get.snackbar("Error", "Gagal memuat data guru");
+        Get.snackbar("Error", "Gagal memuat data pegawai");
       }
     } catch (e) {
-      print("Error Fetch Guru: $e");
+      print("Error Fetch Pegawai: $e");
     } finally {
       isLoading.value = false;
     }
   }
 
-  // 2. TAMBAH / UPDATE GURU
+  // 2. TAMBAH / UPDATE GURU & PEGAWAI
   Future<void> saveGuru({String? id}) async {
     if (namaC.text.isEmpty || nipC.text.isEmpty || emailC.text.isEmpty) {
       Get.snackbar("Error", "Semua data wajib diisi", backgroundColor: Colors.redAccent, colorText: Colors.white);
@@ -53,21 +56,22 @@ class AdminController extends GetxController {
 
     // Jika Mode Tambah Baru, Password Wajib
     if (id == null && passC.text.isEmpty) {
-      Get.snackbar("Error", "Password wajib diisi untuk guru baru", backgroundColor: Colors.redAccent, colorText: Colors.white);
+      Get.snackbar("Error", "Password wajib diisi untuk pegawai baru", backgroundColor: Colors.redAccent, colorText: Colors.white);
       return;
     }
 
     isLoading.value = true;
     try {
       final box = GetStorage();
-      var url = id == null 
+      var url = id == null
           ? '${ApiConfig.baseUrl}/admin/guru' // POST (Baru)
-          : '${ApiConfig.baseUrl}/admin/guru/$id'; // POST (Update - Laravel kadang butuh method spoofing atau POST biasa utk update)
+          : '${ApiConfig.baseUrl}/admin/guru/$id'; // POST (Update)
 
       var body = {
         'nama': namaC.text,
         'email': emailC.text,
         'nisn_nip': nipC.text,
+        'role': selectedRole.value, // Tambahkan role ke API
       };
 
       if (passC.text.isNotEmpty) {
@@ -83,11 +87,11 @@ class AdminController extends GetxController {
         body: body,
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         Get.back(); // Tutup Dialog/Halaman Form
         fetchGuru(); // Refresh List
         clearForm();
-        Get.snackbar("Sukses", "Data Guru Berhasil Disimpan", backgroundColor: Colors.green, colorText: Colors.white);
+        Get.snackbar("Sukses", "Data Pegawai Berhasil Disimpan", backgroundColor: Colors.green, colorText: Colors.white);
       } else {
         var error = jsonDecode(response.body);
         Get.snackbar("Gagal", error['message'] ?? "Terjadi kesalahan", backgroundColor: Colors.orange, colorText: Colors.white);
@@ -99,7 +103,7 @@ class AdminController extends GetxController {
     }
   }
 
-  // 3. HAPUS GURU
+  // 3. HAPUS GURU / PEGAWAI
   Future<void> deleteGuru(String id) async {
     try {
       final box = GetStorage();
@@ -111,7 +115,7 @@ class AdminController extends GetxController {
       if (response.statusCode == 200) {
         fetchGuru();
         Get.back(); // Tutup Dialog Konfirmasi
-        Get.snackbar("Sukses", "Data Guru Dihapus", backgroundColor: Colors.green, colorText: Colors.white);
+        Get.snackbar("Sukses", "Data Pegawai Dihapus", backgroundColor: Colors.green, colorText: Colors.white);
       }
     } catch (e) {
       print("Error Delete: $e");
@@ -123,5 +127,6 @@ class AdminController extends GetxController {
     nipC.clear();
     emailC.clear();
     passC.clear();
+    selectedRole.value = 'guru'; // Reset ke default
   }
 }

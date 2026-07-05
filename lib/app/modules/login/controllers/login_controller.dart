@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:absensi/app/modules/home/views/admin/admin_dashboard_view.dart';
+import 'package:absensi/app/modules/home/views/guru_bk/guru_bk_dashboard_view.dart';
+import 'package:absensi/app/modules/home/views/kepsek/kepsek_dashboard_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -88,12 +90,17 @@ class LoginController extends GetxController {
         );
 
         Future.delayed(Duration(seconds: 1), () {
-          // Cek Role untuk Mengarahkan Halaman
-          if (role == 'admin') {
-             Get.offAll(() => AdminDashboardView());
+          // --- PENYESUAIAN 5 ROLE BARU ---
+          if (role == 'TU') {
+             Get.offAll(() => AdminDashboardView()); // TU pakai view admin yg lama
+          } else if (role == 'kepsek') {
+             Get.offAll(() => KepsekDashboardView()); // Bikin view baru kalau belum ada
+          } else if (role == 'guru_bk') {
+             Get.offAll(() => GuruBkDashboardView()); // Bikin view baru kalau belum ada
           } else if (role == 'guru') {
              Get.offAll(() => GuruDashboardView());
           } else {
+             // Default ke Siswa
              Get.offAll(() => HomeView());
           }
         });

@@ -58,9 +58,8 @@ class IzinView extends StatelessWidget {
             
             // Preview Foto
             Obx(() => GestureDetector(
-              // Di sini kita bisa pilih mau Kamera atau Galeri
-              // Contoh: Pakai Galeri untuk surat izin
-              onTap: () => controller.pickImage(ImageSource.gallery), 
+              // Panggil pickImage() tanpa argumen, karena sudah dikunci ke kamera di controller
+              onTap: () => controller.pickImage(),
               child: Container(
                 height: 200,
                 width: double.infinity,

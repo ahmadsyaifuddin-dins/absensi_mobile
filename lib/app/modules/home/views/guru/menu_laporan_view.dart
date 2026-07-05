@@ -11,7 +11,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'laporan_harian_view.dart';
 import 'laporan_bulanan_view.dart';
 import 'laporan_siswa_view.dart';
-import 'validasi_izin_view.dart'; // Kita masukkan sini juga biar ngumpul
+import 'validasi_izin_view.dart'; 
+
+// [BARU] Import View untuk Laporan Matpel
+import 'laporan_matpel_view.dart'; 
 
 class MenuLaporanView extends StatelessWidget {
   @override
@@ -19,7 +22,7 @@ class MenuLaporanView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Pusat Laporan", style: GoogleFonts.poppins()),
-        backgroundColor: Colors.teal[800], // Warna agak gelap biar beda dikit
+        backgroundColor: Colors.teal[800], 
         foregroundColor: Colors.white,
       ),
       backgroundColor: Colors.grey[100],
@@ -60,62 +63,59 @@ class MenuLaporanView extends StatelessWidget {
           ),
 
           // 4. PENGAJUAN IZIN (Validasi)
-          // Kalau mau dijadikan arsip laporan
           _buildMenuItem(
-            title: "Rekap Data Izin", // Ganti judul biar lebih relevan
+            title: "Rekap Data Izin", 
             subtitle: "Laporan sakit & izin bulanan",
-            icon: Icons.history_edu, // Ganti icon biar beda sama validasi
+            icon: Icons.history_edu, 
             color: Colors.blue,
-            // Arahkan ke View Laporan Baru
-            onTap: () => Get.to(() => LaporanRekapIzinView()), 
+            onTap: () => Get.to(() => LaporanRekapIzinView()),
           ),
 
           // 5. LAPORAN KETERLAMBATAN (Top Skor Telat)
-          // Nanti kita buat view-nya
           _buildMenuItem(
             title: "Ranking Keterlambatan",
             subtitle: "Daftar siswa paling sering telat",
             icon: Icons.timer_off,
             color: Colors.redAccent,
-            onTap: () {
-              Get.to(() => LaporanTelatView());
-              // Get.snackbar("Info", "Fitur ini akan segera hadir!");
-            },
+            onTap: () => Get.to(() => LaporanTelatView()),
           ),
 
-          // 6. LAPORAN JARAK LOKASI ABSENSI (IDE A)
+          // 6. LAPORAN JARAK LOKASI ABSENSI
           _buildMenuItem(
             title: "Jarak & Lokasi Absen",
             subtitle: "Deteksi jarak absen siswa dari sekolah (GPS)",
             icon: Icons.radar,
             color: Colors.deepPurple,
-            onTap: () {
-              // BUKA VIEW YANG BARU DIBUAT
-              Get.to(() => LaporanJarakView());
-            },
+            onTap: () => Get.to(() => LaporanJarakView()),
           ),
 
-          // 7. LAPORAN RED FLAG / SISWA BERMASALAH (IDE B)
+          // 7. LAPORAN RED FLAG / SISWA BERMASALAH
           _buildMenuItem(
             title: "Siswa Bermasalah (Red Flag)",
             subtitle: "Daftar siswa banyak Alpa/Sakit/Telat",
             icon: Icons.warning_amber_rounded,
             color: Colors.red,
-            onTap: () {
-              // ARAHKAN KE VIEW YANG BARU KITA BUAT
-              Get.to(() => LaporanRedflagView());
-            },
+            onTap: () => Get.to(() => LaporanRedflagView()),
           ),
 
-         // 8. LAPORAN PERSENTASE KELAS (IDE C)
+         // 8. LAPORAN PERSENTASE KELAS 
           _buildMenuItem(
             title: "Ranking Kehadiran Kelas",
             subtitle: "Perbandingan grafik kehadiran antar kelas",
             icon: Icons.bar_chart,
             color: Colors.blueGrey,
+            onTap: () => Get.to(() => LaporanPersentaseView()),
+          ),
+
+          // 9. [BARU] LAPORAN PRESENSI MATA PELAJARAN
+          _buildMenuItem(
+            title: "Laporan Presensi Matpel",
+            subtitle: "Deteksi siswa bolos jam pelajaran",
+            icon: Icons.co_present,
+            color: Colors.cyan[700]!,
             onTap: () {
-              // ARAHKAN KE VIEW YANG BARU DIBUAT
-              Get.to(() => LaporanPersentaseView());
+              // Arahkan ke View Laporan Matpel
+              Get.to(() => LaporanMatpelView());
             },
           ),
         ],

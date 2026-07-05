@@ -1,29 +1,30 @@
-import 'package:absensi/app/modules/home/views/guru/data_siswa_view.dart';
-import 'package:absensi/app/modules/home/views/guru/detail_status_view.dart';
-import 'package:absensi/app/modules/home/views/guru/menu_laporan_view.dart';
-import 'package:absensi/app/modules/home/views/guru/pengaturan_sekolah_view.dart';
-import 'package:absensi/app/modules/home/views/guru/rekap_kelas_view.dart';
+import 'package:absensi/app/modules/home/views/guru/riwayat_matpel_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get_storage/get_storage.dart';
+
+// Import View
 import '../../../login/views/login_view.dart';
 import '../../controllers/guru_controller.dart';
 import 'validasi_izin_view.dart';
 import '../profile_view.dart';
+import 'data_siswa_view.dart';
+import 'detail_status_view.dart';
+import 'rekap_kelas_view.dart';
 import '../../../../data/providers/api_config.dart';
 
 class GuruDashboardView extends StatelessWidget {
 
   final GuruController controller = Get.put(GuruController());
-  
+ 
   @override
   Widget build(BuildContext context) {
     final box = GetStorage();
     var user = box.read('user') ?? {'nama': 'Bapak/Ibu Guru', 'nisn_nip': '-'};
 
     return Scaffold(
-      backgroundColor: Colors.grey[50], 
+      backgroundColor: Colors.grey[50],
       body: Stack(
         children: [
           // HEADER BACKGROUND
@@ -83,17 +84,17 @@ class GuruDashboardView extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 30,
                           backgroundColor: Colors.white,
-                          backgroundImage: user['foto_profil'] != null 
+                          backgroundImage: user['foto_profil'] != null
                               ? NetworkImage("${ApiConfig.imageUrl}${user['foto_profil']}") as ImageProvider
                               : null,
-                          child: user['foto_profil'] == null 
-                              ? Icon(Icons.person, size: 35, color: Colors.indigo) 
+                          child: user['foto_profil'] == null
+                              ? Icon(Icons.person, size: 35, color: Colors.indigo)
                               : null,
                         ),
                       ),
-                      
+                     
                       SizedBox(width: 15),
-                      
+                     
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -117,7 +118,7 @@ class GuruDashboardView extends StatelessWidget {
                   ),
 
                   SizedBox(height: 30),
-                  
+                 
                   // --- RINGKASAN HARI INI ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -130,7 +131,7 @@ class GuruDashboardView extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 10),
-                  
+                 
                   Obx(() => Row(
                     children: [
                       _buildSummaryCard("Hadir", "${controller.stats['hadir']}", Colors.green),
@@ -141,10 +142,10 @@ class GuruDashboardView extends StatelessWidget {
                     ],
                   )),
 
-                  // --- MENU ADMINISTRASI ---
+                  // --- MENU AKADEMIK ---
                   SizedBox(height: 30),
                   Text(
-                    "Menu Administrasi",
+                    "Aktivitas Akademik",
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -159,9 +160,9 @@ class GuruDashboardView extends StatelessWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: 15,
                     mainAxisSpacing: 15,
-                    childAspectRatio: 1.3,
+                    childAspectRatio: 1.2,
                     children: [
-                      // 1. Validasi Izin
+                      // 1. Validasi Izin (Wali Kelas)
                       _buildMenuButton(
                         Icons.verified,
                         "Validasi Izin",
@@ -170,45 +171,37 @@ class GuruDashboardView extends StatelessWidget {
                           Get.to(() => ValidasiIzinView());
                         },
                       ),
-                      
-                      // 2. Rekap Kelas
+                     
+                      // 2. Presensi Kelas Matpel [BARU]
                       _buildMenuButton(
-                        Icons.meeting_room, // Icon Kelas
-                        "Rekap Kelas",
+                        Icons.co_present, 
+                        "Presensi Kelas",
+                        Colors.blue,
+                        () {
+                           // Nanti kita buatkan View khusus untuk Guru memulai sesi absen kelas
+                           Get.to(() => RiwayatMatpelView());
+                        },
+                      ),
+
+                      // 3. Rekap Kelas
+                      _buildMenuButton(
+                        Icons.meeting_room,
+                        "Rekap Kelas Saya",
                         Colors.teal,
                         () {
                            Get.to(() => RekapKelasView());
                         },
                       ),
 
-                      // 3. Data Siswa
+                      // 4. Data Siswa
                       _buildMenuButton(
                         Icons.people,
                         "Data Siswa",
                         Colors.purple,
                         () {
-                           Get.to(() => DataSiswaView()); 
+                           Get.to(() => DataSiswaView());
                         },
                       ),
-                      // 4. Pusat Laporan
-                      _buildMenuButton(
-                      Icons.analytics, // Icon Grafik
-                      "Pusat Laporan", // Ganti nama biar keren
-                      Colors.teal, // Warna
-                      () {
-                         // ARAHKAN KE MENU SUB-LAPORAN
-                         Get.to(() => MenuLaporanView()); 
-                      },
-                    ),
-
-                      _buildMenuButton(
-                      Icons.settings,
-                      "Lokasi Sekolah",
-                      Colors.blueGrey,
-                      () {
-                        Get.to(() => PengaturanSekolahView());
-                      },
-                    ),
                     ],
                   ),
 
@@ -224,15 +217,9 @@ class GuruDashboardView extends StatelessWidget {
 
   // --- WIDGET HELPER ---
   Widget _buildSummaryCard(String label, String count, Color color) {
-    String statusParam = 'hadir';
-    if (label.contains('Sakit')) statusParam = 'sakit'; // Default ke sakit dulu, nanti filter API bisa disesuaikan kalau mau gabung
-    // TAPI karena di UI kamu Sakit/Izin digabung, logic klik-nya agak tricky.
-    // Opsi terbaik: Kita pecah tombolnya, atau saat diklik muncul Pilihan (Dialog) mau lihat Sakit atau Izin.
-    
-    // LOGIC KHUSUS BUTTON SAKIT/IZIN
     bool isGabungan = label.contains('Sakit') || label.contains('Izin');
     bool isBelum = label.contains('Belum');
-    
+   
     return Expanded(
       child: Material(
         color: Colors.transparent,
@@ -243,7 +230,6 @@ class GuruDashboardView extends StatelessWidget {
             } else if (label == "Hadir") {
               Get.to(() => DetailStatusView(title: "Siswa Hadir", status: "hadir", themeColor: Colors.green));
             } else if (isGabungan) {
-               // Karena Sakit & Izin digabung di satu kotak, kita kasih pilihan saat diklik
                Get.defaultDialog(
                  title: "Lihat Detail",
                  content: Column(
@@ -319,7 +305,8 @@ class GuruDashboardView extends StatelessWidget {
             SizedBox(height: 10),
             Text(
               label,
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 13),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

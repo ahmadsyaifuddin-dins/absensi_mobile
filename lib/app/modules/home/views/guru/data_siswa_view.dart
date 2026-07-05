@@ -70,14 +70,12 @@ class DataSiswaView extends StatelessWidget {
     );
   }
 
-  // ... (Bagian Form Dialog & Delete tetap sama seperti sebelumnya) ...
-  // Paste ulang fungsi _showForm dan _confirmDelete di sini kalau perlu
-  
   void _showForm(BuildContext context, Map? item) {
     if (item != null) {
       controller.namaC.text = item['nama'];
       controller.nisnC.text = item['nisn_nip'];
-      controller.passC.clear(); 
+      controller.passC.clear();
+      controller.noHpOrtuC.text = item['no_hp_ortu'] ?? ''; 
       controller.selectedKelasId.value = item['kelas_id'] != null ? item['kelas_id'].toString() : "";
     } else {
       controller.clearForm();
@@ -104,6 +102,19 @@ class DataSiswaView extends StatelessWidget {
                 controller: controller.nisnC,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(labelText: "NISN (Untuk Login)", border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+              ),
+              SizedBox(height: 10),
+
+              // --- [BARU] TEXTFIELD NO HP ORTU ---
+              TextField(
+                controller: controller.noHpOrtuC,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: "Nomor WhatsApp Orang Tua", 
+                  hintText: "Contoh: 081234567890",
+                  prefixIcon: Icon(Icons.phone, color: Colors.green),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))
+                ),
               ),
               SizedBox(height: 10),
               

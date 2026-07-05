@@ -1,4 +1,3 @@
-import 'package:absensi/app/modules/home/views/admin/admin_dashboard_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -7,14 +6,19 @@ import 'package:intl/date_symbol_data_local.dart';
 
 // Import View
 import 'app/modules/login/views/login_view.dart';
-import 'app/modules/home/views/home_view.dart';
+import 'app/modules/home/views/home_view.dart'; // Dashboard Siswa
+import 'app/modules/home/views/admin/admin_dashboard_view.dart'; // Dipakai untuk TU
 import 'app/modules/home/views/guru/guru_dashboard_view.dart';
+
+// TODO: Pastikan kamu membuat 2 file view baru ini nanti ya
+import 'app/modules/home/views/kepsek/kepsek_dashboard_view.dart'; 
+import 'app/modules/home/views/guru_bk/guru_bk_dashboard_view.dart';
 
 void main() async {
   // 1. WAJIB: Pastikan binding flutter siap dulu
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. WAJIB: Initialize Storage (Siapkan hardisk kecil di browser)
+  // 2. WAJIB: Initialize Storage (Siapkan hardisk kecil di browser/HP)
   await GetStorage.init();
 
   // 3. WAJIB: Siapkan format tanggal Indonesia
@@ -36,30 +40,34 @@ class MyApp extends StatelessWidget {
 
     // Cek: Apakah ada token tersimpan?
     if (box.hasData('token')) {
-      // Cek Role: Siswa atau Guru?
-      String? role = box.read('role'); // Pastikan saat login simpan 'role'
+      // Cek Role dari storage
+      String? role = box.read('role'); 
 
       print("Auto-Login terdeteksi. Role: $role"); // Cek di Console
 
-      if (role == 'admin') {
-        initialRoute = AdminDashboardView();
+      // --- MAPPING 5 ROLE SESUAI REVISI DOSPEM ---
+      if (role == 'TU') {
+        initialRoute = AdminDashboardView(); // TU pakai dashboard admin
+      } else if (role == 'kepsek') {
+        initialRoute = KepsekDashboardView(); 
+      } else if (role == 'guru_bk') {
+        initialRoute = GuruBkDashboardView();
       } else if (role == 'guru') {
         initialRoute = GuruDashboardView();
       } else {
-        initialRoute = HomeView();
+        initialRoute = HomeView(); // Default untuk siswa
       }
     }
 
     return GetMaterialApp(
-      title: 'Absensi SMAN 3',
+      title: 'Absensi SMAN 3 Banjarmasin',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         textTheme: GoogleFonts.poppinsTextTheme(),
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
       ),
-      home:
-          initialRoute,
+      home: initialRoute,
     );
   }
 }

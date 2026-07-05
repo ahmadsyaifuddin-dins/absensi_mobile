@@ -154,8 +154,14 @@ class AbsensiController extends GetxController {
   // 4. API & LAINNYA (Tetap Sama)
   // ==========================================
   
-  Future<void> pickImage([ImageSource source = ImageSource.camera]) async {
-    final XFile? photo = await picker.pickImage(source: source, imageQuality: 50);
+  Future<void> pickImage() async {
+    // Paksa secara sistem hanya menggunakan ImageSource.camera
+    final XFile? photo = await picker.pickImage(
+      source: ImageSource.camera, 
+      imageQuality: 50,
+      preferredCameraDevice: CameraDevice.front, // Opsional: Paksa kamera depan
+    );
+    
     if (photo != null) {
       image.value = File(photo.path);
     }

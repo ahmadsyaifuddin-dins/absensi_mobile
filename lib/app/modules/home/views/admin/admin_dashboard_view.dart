@@ -1,18 +1,22 @@
-import 'package:absensi/app/modules/home/views/admin/hari_libur_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get_storage/get_storage.dart';
+
+// Import View
 import '../../../login/views/login_view.dart';
-import '../../controllers/admin_controller.dart';
+import 'hari_libur_view.dart';
 import 'manajemen_guru_view.dart';
-import '../../../../data/providers/api_config.dart';
+import '../guru/data_siswa_view.dart';
+import '../guru/rekap_kelas_view.dart';
+import '../guru/pengaturan_sekolah_view.dart';
+import '../guru/menu_laporan_view.dart';
 
 class AdminDashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final box = GetStorage();
-    var user = box.read('user') ?? {'nama': 'Administrator'};
+    var user = box.read('user') ?? {'nama': 'Administrator Tata Usaha'};
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -20,7 +24,7 @@ class AdminDashboardView extends StatelessWidget {
         children: [
           // Header Background Merah
           Container(
-            height: 200,
+            height: 220,
             decoration: BoxDecoration(
               color: Colors.red[800],
               borderRadius: BorderRadius.only(
@@ -31,7 +35,7 @@ class AdminDashboardView extends StatelessWidget {
           ),
           
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,13 +44,13 @@ class AdminDashboardView extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Admin Panel", style: GoogleFonts.poppins(color: Colors.white70)),
+                      Text("Tata Usaha Panel", style: GoogleFonts.poppins(color: Colors.white70)),
                       IconButton(
                         icon: Icon(Icons.logout, color: Colors.white),
                         onPressed: () {
                            Get.defaultDialog(
                             title: "Logout",
-                            middleText: "Keluar dari mode Admin?",
+                            middleText: "Keluar dari sistem Tata Usaha?",
                             textConfirm: "Ya", textCancel: "Batal",
                             confirmTextColor: Colors.white,
                             onConfirm: () {
@@ -74,47 +78,62 @@ class AdminDashboardView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(user['nama'], style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text("Super Administrator", style: GoogleFonts.poppins(color: Colors.red[100])),
+                          Text("Tata Usaha Sekolah", style: GoogleFonts.poppins(color: Colors.red[100])),
                         ],
                       )
                     ],
                   ),
-                  SizedBox(height: 70), 
+                  SizedBox(height: 50),
 
-                  // --- MENU GRID ---
-                  Text("Manajemen Data Master", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  // --- MENU GRID ADMINISTRASI ---
+                  Text("Manajemen Master Data", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
                   SizedBox(height: 15),
                   
-                  Center(
-                    child: Wrap(
-                      spacing: 15,
-                      runSpacing: 15,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: (MediaQuery.of(context).size.width - 55) / 2,
-                          height: 140,
-                          child: _buildMenuCard(
-                            icon: Icons.supervisor_account, 
-                            label: "Data Guru", 
-                            color: Colors.orange,
-                            onTap: () => Get.to(() => ManajemenGuruView()),
-                          ),
-                        ),
-
-                        // (HARI LIBUR)
-                        SizedBox(
-                          width: (MediaQuery.of(context).size.width - 55) / 2,
-                          height: 140,
-                          child: _buildMenuCard(
-                            icon: Icons.event_busy, 
-                            label: "Hari Libur", 
-                            color: Colors.pink,    
-                            onTap: () => Get.to(() => HariLiburView()), 
-                          ),
-                        ),
-                      ],
-                    ),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                    childAspectRatio: 1.1,
+                    children: [
+                      _buildMenuCard(
+                        icon: Icons.supervisor_account,
+                        label: "Data Guru",
+                        color: Colors.orange,
+                        onTap: () => Get.to(() => ManajemenGuruView()),
+                      ),
+                      _buildMenuCard(
+                        icon: Icons.people,
+                        label: "Data Siswa",
+                        color: Colors.purple,
+                        onTap: () => Get.to(() => DataSiswaView()),
+                      ),
+                      _buildMenuCard(
+                        icon: Icons.meeting_room,
+                        label: "Manajemen Kelas",
+                        color: Colors.teal,
+                        onTap: () => Get.to(() => RekapKelasView()),
+                      ),
+                      _buildMenuCard(
+                        icon: Icons.event_busy,
+                        label: "Hari Libur",
+                        color: Colors.pink,    
+                        onTap: () => Get.to(() => HariLiburView()),
+                      ),
+                      _buildMenuCard(
+                        icon: Icons.settings,
+                        label: "Pengaturan Sekolah",
+                        color: Colors.blueGrey,
+                        onTap: () => Get.to(() => PengaturanSekolahView()),
+                      ),
+                      _buildMenuCard(
+                        icon: Icons.analytics,
+                        label: "Pusat Laporan",
+                        color: Colors.blue,
+                        onTap: () => Get.to(() => MenuLaporanView()),
+                      ),
+                    ],
                   )
                 ],
               ),
@@ -142,7 +161,7 @@ class AdminDashboardView extends StatelessWidget {
               child: Icon(icon, color: color, size: 30),
             ),
             SizedBox(height: 10),
-            Text(label, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+            Text(label, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13), textAlign: TextAlign.center),
           ],
         ),
       ),

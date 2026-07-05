@@ -14,26 +14,30 @@ class RekapKelasView extends StatelessWidget {
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
       ),
+      backgroundColor: Colors.grey[100], // Biar background gak terlalu putih kaku
       body: Obx(() {
         if (controller.isLoading.value) return Center(child: CircularProgressIndicator());
-        
+       
         if (controller.listKelas.isEmpty) {
-          return Center(child: Text("Belum ada data kelas"));
+          return Center(child: Text("Belum ada data kelas", style: GoogleFonts.poppins(color: Colors.grey)));
         }
 
         return GridView.builder(
           padding: EdgeInsets.all(15),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // 2 Kolom
+            crossAxisCount: 2, 
             crossAxisSpacing: 15,
             mainAxisSpacing: 15,
-            childAspectRatio: 1.3, // Rasio Lebar:Tinggi
+            childAspectRatio: 1.1, // Disesuaikan sedikit biar badge-nya muat
           ),
           itemCount: controller.listKelas.length,
           itemBuilder: (context, index) {
             var item = controller.listKelas[index];
-            // siswa_count didapat dari withCount di Laravel
-            var jumlahSiswa = item['siswa_count'] ?? 0; 
+            var jumlahSiswa = item['siswa_count'] ?? 0;
+            
+            // --- LOGIC STATUS APPROVAL ---
+            String status = item['status_approval'] ?? 'pending';
+            bool isApproved = status == 'approved';
 
             return Card(
               elevation: 3,
@@ -41,14 +45,19 @@ class RekapKelasView extends StatelessWidget {
               color: Colors.white,
               child: InkWell(
                 onTap: () => _showDialog(context, item),
+                borderRadius: BorderRadius.circular(15),
                 child: Padding(
-                  padding: const EdgeInsets.all(10.0), // 1. Padding dikecilkan dikit (biar lega)
+                  padding: const EdgeInsets.all(10.0),
                   child: FittedBox(
-                    fit: BoxFit.scaleDown, 
+                    fit: BoxFit.scaleDown,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.class_, size: 40, color: Colors.teal),
+                        Icon(
+                          Icons.class_, 
+                          size: 40, 
+                          color: isApproved ? Colors.teal : Colors.orange // Warna icon ngikutin status
+                        ),
                         SizedBox(height: 10),
                         Text(
                           item['nama_kelas'],
@@ -59,6 +68,27 @@ class RekapKelasView extends StatelessWidget {
                         Text(
                           "$jumlahSiswa Siswa",
                           style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12),
+                        ),
+                        SizedBox(height: 8),
+                        
+                        // --- BADGE STATUS APPROVAL ---
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isApproved ? Colors.green[50] : Colors.orange[50],
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isApproved ? Colors.green[300]! : Colors.orange[300]!,
+                            )
+                          ),
+                          child: Text(
+                            isApproved ? "Disahkan" : "Menunggu",
+                            style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: isApproved ? Colors.green[700] : Colors.orange[800],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -105,7 +135,6 @@ class RekapKelasView extends StatelessWidget {
       onConfirm: () {
         controller.simpanKelas(id: item != null ? item['id'].toString() : null);
       },
-      // Tambahkan tombol Hapus jika mode Edit
       actions: item != null ? [
         TextButton(
           onPressed: () {
@@ -122,7 +151,7 @@ class RekapKelasView extends StatelessWidget {
               }
             );
           },
-          child: Text("Hapus Kelas Ini", style: TextStyle(color: Colors.red)),
+          child: Text("Hapus Kelas Ini", style: GoogleFonts.poppins(color: Colors.red)),
         )
       ] : null
     );

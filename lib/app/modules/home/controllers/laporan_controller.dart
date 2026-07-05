@@ -6,6 +6,9 @@ import '../../../data/providers/api_config.dart';
 // Import Services Baru
 import '../../../services/laporan_service.dart';
 import '../../../services/download_service.dart';
+import 'package:http/http.dart' as http;
+import 'package:get_storage/get_storage.dart';
+import 'dart:convert';
 
 class LaporanController extends GetxController {
   var isLoading = false.obs;
@@ -19,6 +22,9 @@ class LaporanController extends GetxController {
   var listSiswaDropdown = [].obs;
   var listDetailSiswa = [].obs;
   var listRekapIzin = [].obs;
+  var listGuruMatpel = [].obs;
+  var selectedGuruMatpelId = "".obs;
+  var selectedDateMatpel = DateTime.now().obs;
   
   // --- FILTER VARIABLES ---
   var selectedMonth = DateTime.now().month.obs;
@@ -36,6 +42,7 @@ class LaporanController extends GetxController {
   void onInit() {
     super.onInit();
     fetchKelas();
+    fetchListGuruMatpel();
   }
 
   // =========================================================
@@ -275,5 +282,113 @@ class LaporanController extends GetxController {
       'bulan': selectedMonth.value.toString(),
       'tahun': selectedYear.value.toString(),
     });
+  }
+
+  // =========================================================
+  // LOGIC LAPORAN PRESENSI MATPEL
+  // =========================================================
+
+  // 1. Ambil Data Guru untuk Dropdown Laporan Matpel
+  Future<void> fetchListGuruMatpel() async {
+    try {
+      final box = GetStorage();
+      var response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/list-guru-matpel'),
+        headers: {
+          'Authorization': 'Bearer ${box.read('token')}',
+          'Accept': 'application/json'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        listGuruMatpel.value = data['data'];
+        
+        if (listGuruMatpel.isNotEmpty) {
+          selectedGuruMatpelId.value = listGuruMatpel[0]['id'].toString();
+        }
+      }
+    } catch (e) {
+      print("Error fetch list guru matpel: $e");
+    }
+  }
+
+  // 2. Pemilih Tanggal
+  Future<void> chooseDateMatpel(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDateMatpel.value,
+      firstDate: DateTime(2024),
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.cyan[700]!, // Sesuaikan warna dengan tema laporan
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      selectedDateMatpel.value = picked;
+    }
+  }
+
+  // 3. Eksekusi Download PDF
+  void downloadPdfMatpel() {
+    if (selectedKelasId.value.isEmpty || selectedGuruMatpelId.value.isEmpty) {
+      Get.snackbar(
+        "Peringatan",
+        "Silakan pilih Kelas dan Guru terlebih dahulu!",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    // Format tanggal jadi YYYY-MM-DD
+    String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDateMatpel.value);
+    
+    DownloadService.downloadPdf('${ApiConfig.baseUrl}/laporan/matpel/export', {
+      'kelas_id': selectedKelasId.value,
+      'guru_id': selectedGuruMatpelId.value,
+      'tanggal': formattedDate,
+    });
+  }
+
+  // =========================================================
+  // LOGIC GRAFIK PERSENTASE (KEPSEK)
+  // =========================================================
+
+  // State untuk menampung persentase kehadiran
+  var pctHadir = 0.0.obs;
+  var pctSakit = 0.0.obs;
+  var pctIzin = 0.0.obs;
+  var pctAlpa = 0.0.obs;
+
+  Future<void> fetchDataGrafik() async {
+    isLoading.value = true;
+    try {
+      // Nanti kamu bisa ubah ini dengan hit API ke backend Laravel
+      // Contoh: var response = await http.get('${ApiConfig.baseUrl}/laporan/persentase-chart');
+      
+      // --- DUMMY DATA SEMENTARA ---
+      // Agar grafiknya bisa langsung kamu lihat hasilnya saat di-build
+      await Future.delayed(Duration(milliseconds: 800)); // Simulasi loading API
+      pctHadir.value = 65.0; // 65% Hadir
+      pctSakit.value = 15.0; // 15% Sakit
+      pctIzin.value = 10.0;  // 10% Izin
+      pctAlpa.value = 10.0;  // 10% Alpa/Bolos
+      
+    } catch (e) {
+      print("Error fetch grafik: $e");
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

@@ -10,7 +10,7 @@ class ManajemenGuruView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Manajemen Guru", style: GoogleFonts.poppins(color: Colors.white)),
+        title: Text("Manajemen Pegawai", style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: Colors.red[800],
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -20,14 +20,22 @@ class ManajemenGuruView extends StatelessWidget {
         onPressed: () => _showFormDialog(context),
       ),
       body: Obx(() {
-        if (controller.isLoading.value) return Center(child: CircularProgressIndicator());
-        if (controller.listGuru.isEmpty) return Center(child: Text("Belum ada data guru"));
+        if (controller.isLoading.value && controller.listGuru.isEmpty) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (controller.listGuru.isEmpty) return Center(child: Text("Belum ada data pegawai"));
 
         return ListView.builder(
           padding: EdgeInsets.all(15),
           itemCount: controller.listGuru.length,
           itemBuilder: (context, index) {
             var item = controller.listGuru[index];
+            
+            // Format Label Role agar lebih rapi di list
+            String labelRole = "Guru";
+            if (item['role'] == 'kepsek') labelRole = "Kepala Sekolah";
+            if (item['role'] == 'guru_bk') labelRole = "Guru BK";
+
             return Card(
               margin: EdgeInsets.only(bottom: 10),
               elevation: 2,
@@ -37,7 +45,7 @@ class ManajemenGuruView extends StatelessWidget {
                   child: Text(item['nama'][0], style: TextStyle(color: Colors.red[800], fontWeight: FontWeight.bold)),
                 ),
                 title: Text(item['nama'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                subtitle: Text("NIP: ${item['nisn_nip'] ?? '-'}\n${item['email']}", style: GoogleFonts.poppins(fontSize: 12)),
+                subtitle: Text("Role: $labelRole\nNIP: ${item['nisn_nip'] ?? '-'}\n${item['email']}", style: GoogleFonts.poppins(fontSize: 12)),
                 isThreeLine: true,
                 trailing: PopupMenuButton(
                   onSelected: (value) {
@@ -45,7 +53,7 @@ class ManajemenGuruView extends StatelessWidget {
                       _showFormDialog(context, item: item);
                     } else if (value == 'delete') {
                       Get.defaultDialog(
-                        title: "Hapus Guru?",
+                        title: "Hapus Pegawai?",
                         middleText: "Data yang dihapus tidak bisa kembali.",
                         textConfirm: "Hapus", textCancel: "Batal",
                         confirmTextColor: Colors.white, buttonColor: Colors.red,
@@ -71,9 +79,10 @@ class ManajemenGuruView extends StatelessWidget {
     // Jika Edit, isi form dengan data lama
     if (item != null) {
       controller.namaC.text = item['nama'];
-      controller.nipC.text = item['nisn_nip'];
+      controller.nipC.text = item['nisn_nip'] ?? '';
       controller.emailC.text = item['email'];
-      controller.passC.text = ""; // Password kosongkan kalau edit (opsional diisi)
+      controller.passC.text = ""; 
+      controller.selectedRole.value = item['role'] ?? 'guru';
     } else {
       controller.clearForm();
     }
@@ -90,7 +99,7 @@ class ManajemenGuruView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                item == null ? "Tambah Guru Baru" : "Edit Data Guru",
+                item == null ? "Tambah Pegawai Baru" : "Edit Data Pegawai",
                 style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 20),
@@ -100,24 +109,51 @@ class ManajemenGuruView extends StatelessWidget {
                 decoration: InputDecoration(labelText: "Nama Lengkap", border: OutlineInputBorder()),
               ),
               SizedBox(height: 10),
+              
               TextField(
                 controller: controller.nipC,
                 decoration: InputDecoration(labelText: "NIP / NUPTK", border: OutlineInputBorder()),
                 keyboardType: TextInputType.number,
               ),
               SizedBox(height: 10),
+
+              // --- DROPDOWN ROLE ---
+              Obx(() => DropdownButtonFormField<String>(
+                value: controller.selectedRole.value,
+                decoration: InputDecoration(
+                  labelText: "Hak Akses / Role", 
+                  border: OutlineInputBorder(),
+                  filled: item != null, // Visual cue kalau terkunci
+                  fillColor: item != null ? Colors.grey[200] : Colors.white,
+                  helperText: item != null ? "Role tidak dapat diubah saat mengedit data." : null,
+                ),
+                items: [
+                  DropdownMenuItem(value: 'guru', child: Text("Guru Mata Pelajaran / Wali Kelas")),
+                  DropdownMenuItem(value: 'kepsek', child: Text("Kepala Sekolah")),
+                  DropdownMenuItem(value: 'guru_bk', child: Text("Guru Bimbingan Konseling (BK)")),
+                ],
+                // KUNCI DROPDOWN SAAT EDIT: Jika item tidak null, onChanged dibuat null
+                onChanged: item != null 
+                    ? null 
+                    : (val) {
+                        if (val != null) controller.selectedRole.value = val;
+                      },
+              )),
+              SizedBox(height: 10),
+
               TextField(
                 controller: controller.emailC,
                 decoration: InputDecoration(labelText: "Email Login", border: OutlineInputBorder()),
                 keyboardType: TextInputType.emailAddress,
               ),
               SizedBox(height: 10),
+              
               TextField(
                 controller: controller.passC,
                 decoration: InputDecoration(
-                  labelText: item == null ? "Password" : "Password (Isi jika ingin ubah)", 
+                  labelText: item == null ? "Password" : "Password (Isi jika ingin ubah)",
                   border: OutlineInputBorder(),
-                  helperText: item == null ? "Min. 6 karakter" : "Biarkan kosong jika tidak ingin mengubah password"
+                  helperText: item == null ? "Min. 6 karakter" : "Biarkan kosong jika tidak mengubah password"
                 ),
                 obscureText: true,
               ),
