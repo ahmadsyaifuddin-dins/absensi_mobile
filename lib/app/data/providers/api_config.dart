@@ -1,6 +1,6 @@
 class ApiConfig {
   // Ganti IP ini sesuai IP Laptop kamu saat ini
-  static const String mainUrl = "http://192.168.43.208:8000"; 
+  static const String mainUrl = "http://192.168.0.28:8000"; 
   
   // URL untuk API
   static const String baseUrl = "$mainUrl/api";

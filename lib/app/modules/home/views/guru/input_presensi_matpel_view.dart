@@ -77,6 +77,31 @@ class InputPresensiMatpelView extends StatelessWidget {
           
           Divider(height: 1, thickness: 1),
 
+          Obx(() {
+            if (controller.listSiswa.isNotEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Daftar Siswa", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                    ElevatedButton.icon(
+                      icon: Icon(Icons.checklist, size: 18),
+                      label: Text("Hadir Semua", style: GoogleFonts.poppins(fontSize: 12)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      onPressed: () => controller.setSemuaStatus('Hadir'),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return SizedBox.shrink();
+          }),
+          
           // --- LIST DATA SISWA UNTUK DICENTANG ---
           Expanded(
             child: Obx(() {

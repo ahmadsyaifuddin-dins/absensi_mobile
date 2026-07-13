@@ -16,6 +16,32 @@ class ApprovalKelasView extends StatelessWidget {
         foregroundColor: Colors.white,
       ),
       backgroundColor: Colors.grey[50],
+      
+      floatingActionButton: Obx(() {
+        // Tombol hanya muncul jika ada data yang pending
+        if (controller.listKelasPending.isNotEmpty && !controller.isLoading.value) {
+          return FloatingActionButton.extended(
+            onPressed: () {
+              Get.defaultDialog(
+                title: "Sah-kan Semua?",
+                middleText: "Dengan ini Kepsek menyetujui SEMUA pembagian kelas yang ada di daftar ini.",
+                textConfirm: "Ya, Sah-kan Semua",
+                textCancel: "Batal",
+                confirmTextColor: Colors.white,
+                buttonColor: Colors.green,
+                onConfirm: () {
+                  Get.back(); // Tutup dialog
+                  controller.approveAllKelas();
+                }
+              );
+            },
+            backgroundColor: Colors.green,
+            icon: Icon(Icons.done_all, color: Colors.white),
+            label: Text("Approve Semua", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+          );
+        }
+        return SizedBox.shrink(); // Sembunyikan jika tidak ada data pending
+      }),
       body: Obx(() {
         if (controller.isLoading.value && controller.listKelasPending.isEmpty) {
           return Center(child: CircularProgressIndicator(color: Colors.orange));

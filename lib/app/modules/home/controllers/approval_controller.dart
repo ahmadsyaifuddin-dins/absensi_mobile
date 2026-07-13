@@ -73,4 +73,33 @@ class ApprovalController extends GetxController {
       print("Error approve kelas: $e");
     }
   }
+
+  Future<void> approveAllKelas() async {
+    try {
+      final box = GetStorage();
+      var response = await http.put(
+        Uri.parse('${ApiConfig.baseUrl}/kelas/approve-all'),
+        headers: {
+          'Authorization': 'Bearer ${box.read('token')}',
+          'Accept': 'application/json'
+        }
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar(
+          "Berhasil!",
+          "Semua data kelas telah resmi disahkan.",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        // Refresh daftar kelas
+        fetchKelasPending();
+      } else {
+        Get.snackbar("Gagal", "Terjadi kesalahan sistem.", backgroundColor: Colors.red, colorText: Colors.white);
+      }
+    } catch (e) {
+      print("Error approve all kelas: $e");
+    }
+  }
 }

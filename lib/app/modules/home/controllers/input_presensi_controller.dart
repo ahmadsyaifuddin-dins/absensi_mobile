@@ -71,6 +71,13 @@ class InputPresensiController extends GetxController {
     statusPresensi[siswaId] = status;
   }
 
+  // Fungsi tambahan untuk merubah SEMUA status secara serentak
+  void setSemuaStatus(String status) {
+    for (var siswa in listSiswa) {
+      statusPresensi[siswa['id']] = status;
+    }
+  }
+
   // 4. Submit Bulk Insert ke Laravel
   Future<void> submitPresensi() async {
     if (selectedKelasId.value.isEmpty || matpelC.text.isEmpty) {
