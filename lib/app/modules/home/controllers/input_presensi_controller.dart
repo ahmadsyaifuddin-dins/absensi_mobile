@@ -8,7 +8,8 @@ import '../../../data/providers/api_config.dart';
 class InputPresensiController extends GetxController {
   var isLoading = false.obs;
   var isFetchingSiswa = false.obs;
-  
+  var catatanPresensi = {}.obs;
+
   var listKelas = [].obs;
   var listSiswa = [].obs;
   
@@ -78,6 +79,10 @@ class InputPresensiController extends GetxController {
     }
   }
 
+  void updateCatatan(int siswaId, String catatan) {
+    catatanPresensi[siswaId] = catatan;
+  }
+
   // 4. Submit Bulk Insert ke Laravel
   Future<void> submitPresensi() async {
     if (selectedKelasId.value.isEmpty || matpelC.text.isEmpty) {
@@ -97,9 +102,17 @@ class InputPresensiController extends GetxController {
       // Format data menjadi array of objects sesuai request Laravel
       List<Map<String, dynamic>> absensiArray = [];
       statusPresensi.forEach((siswaId, status) {
+        // Ambil catatan jika ada, jika tidak ada kirim string kosong atau null
+        String catatanSiswa = catatanPresensi[siswaId] ?? '';
+        
+        // Reset catatan jika guru tiba-tiba mengubah status kembali ke Hadir/Alpa
+        if (status == 'Hadir' || status == 'Alpa') {
+          catatanSiswa = '';
+        }
         absensiArray.add({
           'pengguna_id': siswaId,
-          'status': status
+          'status': status,
+          'catatan': catatanSiswa,
         });
       });
 

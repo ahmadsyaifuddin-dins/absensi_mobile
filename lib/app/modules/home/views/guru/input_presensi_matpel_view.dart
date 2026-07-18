@@ -103,6 +103,7 @@ class InputPresensiMatpelView extends StatelessWidget {
           }),
           
           // --- LIST DATA SISWA UNTUK DICENTANG ---
+          // --- LIST DATA SISWA UNTUK DICENTANG ---
           Expanded(
             child: Obx(() {
               if (controller.isFetchingSiswa.value) {
@@ -153,13 +154,40 @@ class InputPresensiMatpelView extends StatelessWidget {
                           // TOGGLE STATUS ABSEN (Hadir / Sakit / Izin / Alpa)
                           Obx(() {
                             String currentStatus = controller.statusPresensi[idSiswa] ?? 'Hadir';
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            return Column(
                               children: [
-                                _buildStatusRadio(idSiswa, "Hadir", currentStatus, Colors.green),
-                                _buildStatusRadio(idSiswa, "Sakit", currentStatus, Colors.orange),
-                                _buildStatusRadio(idSiswa, "Izin", currentStatus, Colors.blue),
-                                _buildStatusRadio(idSiswa, "Alpa", currentStatus, Colors.red),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    _buildStatusRadio(idSiswa, "Hadir", currentStatus, Colors.green),
+                                    _buildStatusRadio(idSiswa, "Sakit", currentStatus, Colors.orange),
+                                    _buildStatusRadio(idSiswa, "Izin", currentStatus, Colors.blue),
+                                    _buildStatusRadio(idSiswa, "Alpa", currentStatus, Colors.red),
+                                  ],
+                                ),
+                                
+                                // --- INPUT KETERANGAN MUNCUL JIKA SAKIT ATAU IZIN ---
+                                if (currentStatus == 'Sakit' || currentStatus == 'Izin')
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 12.0),
+                                    child: TextField(
+                                      onChanged: (val) => controller.updateCatatan(idSiswa, val),
+                                      maxLines: 1,
+                                      style: GoogleFonts.poppins(fontSize: 13),
+                                      decoration: InputDecoration(
+                                        hintText: "Masukkan keterangan $currentStatus...",
+                                        hintStyle: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                                        prefixIcon: Icon(Icons.edit_note, size: 20, color: Colors.grey),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                                      ),
+                                    ),
+                                  ),
                               ],
                             );
                           }),
