@@ -42,6 +42,8 @@ class RiwayatMatpelView extends StatelessWidget {
             String namaKelas = item['kelas'] != null ? item['kelas']['nama_kelas'] : '-';
             String status = item['status'] ?? 'Alpa';
             String matpel = item['matpel'] ?? 'Mata Pelajaran';
+            // Ambil data catatan dari API
+            String catatan = item['catatan'] ?? '';
             
             // Tentukan Warna Berdasarkan Status
             Color statusColor;
@@ -73,6 +75,31 @@ class RiwayatMatpelView extends StatelessWidget {
                       "Pukul: ${item['waktu_presensi']}",
                       style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey),
                     ),
+                    
+                    // --- KONDISIONAL RENDER CATATAN (HANYA SAKIT & IZIN) ---
+                    if ((status == 'Sakit' || status == 'Izin') && catatan.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.notes, size: 14, color: Colors.grey[600]),
+                            SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                "\"$catatan\"",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11, 
+                                  color: Colors.grey[700], 
+                                  fontStyle: FontStyle.italic
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    // --- END CATATAN ---
+                    
                   ],
                 ),
                 trailing: Container(
