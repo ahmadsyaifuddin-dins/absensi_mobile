@@ -1,16 +1,28 @@
-import 'dart:io';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart'; // Untuk hitung jarak di UI
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/absensi_controller.dart';
 
-class AbsensiView extends StatelessWidget {
+class AbsensiView extends StatefulWidget {
   // Terima token dari halaman sebelumnya
   final String tokenUser;
-  AbsensiView({required this.tokenUser});
+  const AbsensiView({Key? key, required this.tokenUser}) : super(key: key);
 
+  @override
+  State<AbsensiView> createState() => _AbsensiViewState();
+}
+
+class _AbsensiViewState extends State<AbsensiView> {
   final AbsensiController controller = Get.put(AbsensiController());
+
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi kamera depan + face detection saat halaman dibuka
+    controller.initCamera();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,18 +44,18 @@ class AbsensiView extends StatelessWidget {
 
             SizedBox(height: 20),
 
-            // --- 2. FOTO SELFIE ---
+            // --- 2. KAMERA LIVE + FACE DETECTION ---
             _buildCameraSection(),
 
             SizedBox(height: 30),
 
-            // --- 3. TOMBOL KIRIM ---
+            // --- 3. TOMBOL KIRIM (Aktif hanya jika wajah terdeteksi) ---
             Obx(() => SizedBox(
               height: 50,
               child: ElevatedButton(
-                onPressed: controller.isLoading.value
+                onPressed: (controller.isLoading.value || !controller.isFaceDetected.value)
                     ? null
-                    : () => controller.absenMasuk(tokenUser),
+                    : () => controller.absenMasuk(widget.tokenUser),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -125,7 +137,7 @@ class AbsensiView extends StatelessWidget {
     );
   }
 
-  // WIDGET KAMERA
+  // WIDGET KAMERA LIVE (Stream + Face Detection)
   Widget _buildCameraSection() {
     return Container(
       padding: EdgeInsets.all(20),
@@ -136,51 +148,100 @@ class AbsensiView extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text("Foto Selfie", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          Text("Foto Selfie (Deteksi Wajah)", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           SizedBox(height: 15),
           
-          // PREVIEW FOTO
+          // LIVE PREVIEW KAMERA
           Obx(() {
-            return controller.image.value == null
-              ? Container(
-                  height: 200,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey)
+            if (controller.cameraError.value.isNotEmpty) {
+              return _buildCameraPlaceholder(
+                icon: Icons.no_photography,
+                text: controller.cameraError.value,
+              );
+            }
+            if (!controller.isCameraReady.value || controller.cameraController == null) {
+              return _buildCameraPlaceholder(
+                icon: Icons.camera_alt,
+                text: "Menyiapkan kamera...",
+                showLoader: true,
+              );
+            }
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                height: 260,
+                width: double.infinity,
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: controller.cameraController!.value.previewSize!.height,
+                    height: controller.cameraController!.value.previewSize!.width,
+                    child: CameraPreview(controller.cameraController!),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.camera_alt, size: 50, color: Colors.grey),
-                      Text("Belum ada foto", style: GoogleFonts.poppins(color: Colors.grey))
-                    ],
-                  ),
-                )
-              : ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.file(
-                    controller.image.value!,
-                    height: 300,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                );
+                ),
+              ),
+            );
           }),
 
-          SizedBox(height: 15),
-          
-          // TOMBOL AMBIL FOTO
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => controller.pickImage(),
-              icon: Icon(Icons.camera_alt),
-              label: Text("Ambil Foto"),
-              style: OutlinedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 12)),
+          SizedBox(height: 12),
+
+          // STATUS DETEKSI WAJAH
+          Obx(() {
+            if (!controller.isCameraReady.value) return const SizedBox.shrink();
+            final detected = controller.isFaceDetected.value;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  detected ? Icons.face : Icons.face_retouching_off,
+                  color: detected ? Colors.green : Colors.orange,
+                  size: 22,
+                ),
+                SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    detected ? "Wajah terdeteksi" : "Arahkan kamera ke wajah Anda",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      color: detected ? Colors.green : Colors.orange,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // Placeholder saat kamera belum siap / error
+  Widget _buildCameraPlaceholder({required IconData icon, required String text, bool showLoader = false}) {
+    return Container(
+      height: 260,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (showLoader)
+            CircularProgressIndicator()
+          else
+            Icon(icon, size: 50, color: Colors.grey),
+          SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(color: Colors.grey),
             ),
-          )
+          ),
         ],
       ),
     );
