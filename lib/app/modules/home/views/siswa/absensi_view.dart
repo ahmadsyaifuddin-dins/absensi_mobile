@@ -8,7 +8,7 @@ import '../../controllers/absensi_controller.dart';
 class AbsensiView extends StatefulWidget {
   // Terima token dari halaman sebelumnya
   final String tokenUser;
-  const AbsensiView({Key? key, required this.tokenUser}) : super(key: key);
+  const AbsensiView({super.key, required this.tokenUser});
 
   @override
   State<AbsensiView> createState() => _AbsensiViewState();
@@ -157,6 +157,7 @@ class _AbsensiViewState extends State<AbsensiView> {
               return _buildCameraPlaceholder(
                 icon: Icons.no_photography,
                 text: controller.cameraError.value,
+                isError: true,
               );
             }
             if (!controller.isCameraReady.value || controller.cameraController == null) {
@@ -217,7 +218,7 @@ class _AbsensiViewState extends State<AbsensiView> {
   }
 
   // Placeholder saat kamera belum siap / error
-  Widget _buildCameraPlaceholder({required IconData icon, required String text, bool showLoader = false}) {
+  Widget _buildCameraPlaceholder({required IconData icon, required String text, bool showLoader = false, bool isError = false}) {
     return Container(
       height: 260,
       width: double.infinity,
@@ -232,14 +233,17 @@ class _AbsensiViewState extends State<AbsensiView> {
           if (showLoader)
             CircularProgressIndicator()
           else
-            Icon(icon, size: 50, color: Colors.grey),
+            Icon(icon, size: 50, color: isError ? Colors.red : Colors.grey),
           SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(color: Colors.grey),
+              style: GoogleFonts.poppins(
+                color: isError ? Colors.red : Colors.grey,
+                fontWeight: isError ? FontWeight.w600 : FontWeight.normal,
+              ),
             ),
           ),
         ],

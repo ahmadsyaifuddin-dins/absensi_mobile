@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -106,6 +107,15 @@ class AbsensiController extends GetxController with WidgetsBindingObserver {
   // Inisialisasi kamera depan (wajib). Dipanggil dari AbsensiView.
   Future<void> initCamera() async {
     if (isCameraReady.value || cameraController != null) return;
+
+    // Web: kamera absen tidak didukung (ML Kit & image stream hanya native)
+    if (kIsWeb) {
+      cameraError.value = "Fitur kamera absensi tidak tersedia di versi Web. "
+          "Deteksi wajah dan pemindaian kamera real-time hanya berjalan di "
+          "perangkat Android/iOS. Silakan gunakan aplikasi di HP "
+          "(Android/iOS) untuk melakukan absensi.";
+      return;
+    }
 
     // Pastikan permission kamera ditangani sebelum membuka kamera
     final status = await Permission.camera.request();
